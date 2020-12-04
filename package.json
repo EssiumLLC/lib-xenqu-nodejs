@@ -1,0 +1,44 @@
+{
+  "name": "lib-xenqu-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev-run": "tsc && node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EssiumLLC/lib-xenqu-node.git"
+  },
+  "keywords": [
+    "essium",
+    "xenqu",
+    "pryde",
+    "api",
+    "node",
+    "javascript",
+    "typescript",
+    "onboarding",
+    "oath",
+    "oath2.0"
+  ],
+  "author": "Soren Zaiser",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/EssiumLLC/lib-xenqu-node/issues"
+  },
+  "homepage": "https://github.com/EssiumLLC/lib-xenqu-node#readme",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "crypto": "^1.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "node-fetch": "^2.6.1",
+    "oauth-sign": "^0.9.0",
+    "typescript": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/jsonwebtoken": "^8.5.0"
+  }
+}
