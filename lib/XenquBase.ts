@@ -1,5 +1,5 @@
 import Oath2Token from "./Models/Oath2Token";
-import {randomBytes, createHmac} from 'crypto'
+import {randomBytes} from 'crypto'
 import axios, {AxiosResponse} from 'axios'
 // @ts-ignore
 import { rfc3986, sign } from "oauth-sign";
