@@ -1,7 +1,7 @@
 {
-  "name": "lib-xenqu-node",
+  "name": "@essium-llc/lib-xenqu-nodejs",
   "version": "1.0.0",
-  "description": "",
+  "description": "Based off of [these API Docs](https://apidocs.xenqu.com/)\r ### Getting Started:\r Install:\r ```shell\r npm install lib-xenqu-nodejs\r ```\r Create an API Instance:\r ```typescript\r import XenquAPI from \"lib-xenqu-nodejs\";",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
@@ -40,5 +40,8 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/jsonwebtoken": "^8.5.0"
+  },
+  "directories": {
+    "lib": "lib"
   }
 }
