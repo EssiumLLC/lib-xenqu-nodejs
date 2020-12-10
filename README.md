@@ -4,7 +4,7 @@ Based off of [these API Docs](https://apidocs.xenqu.com/)
 ### Getting Started:
 Install:
 ```shell
-npm install lib-xenqu-nodejs
+npm install @essium-llc/lib-xenqu-nodejs
 ```
 Create an API Instance:
 ```typescript
