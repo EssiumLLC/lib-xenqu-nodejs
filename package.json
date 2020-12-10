@@ -20,8 +20,9 @@
     "javascript",
     "typescript",
     "onboarding",
-    "oath",
-    "oath2.0"
+    "oauth",
+    "oauth1.0",
+    "oauth2.0"
   ],
   "author": "Soren Zaiser",
   "license": "GPL-3.0",
