@@ -1,13 +1,13 @@
-import * as jwt from "jsonwebtoken"
 import XenquBase from "./XenquBase";
 import Oath2Token from "./Models/Oath2Token";
-import Account from "./Routes/Account";
-import Contact from "./Routes/Contact";
-import Tracking from "./Routes/Tracking";
-import Forms from "./Routes/Forms";
-import Reports from "./Routes/Reports";
-import Files from "./Routes/Files";
-import Search from "./Routes/Search";
+import AccountRoutes from "./Routes/AccountRoutes";
+import ContactRoutes from "./Routes/ContactRoutes";
+import TrackingRoutes from "./Routes/TrackingRoutes";
+import FormsRoutes from "./Routes/FormsRoutes";
+import ReportsRoutes from "./Routes/ReportsRoutes";
+import FilesRoutes from "./Routes/FilesRoutes";
+import SearchRoutes from "./Routes/SearchRoutes";
+import * as fs from "fs";
 
 export default class XenquAPI {
 
@@ -21,21 +21,21 @@ export default class XenquAPI {
 
   /* API Pieces */
   private base: XenquBase;
-  private _account: Account = new Account();
-  private _contact: Contact = new Contact();
-  private _tracking: Tracking = new Tracking();
-  private _forms: Forms = new Forms();
-  private _reports: Reports = new Reports();
-  private _files: Files = new Files();
-  private _search: Search = new Search();
+  private _account: AccountRoutes = new AccountRoutes();
+  private _contact: ContactRoutes = new ContactRoutes();
+  private _tracking: TrackingRoutes = new TrackingRoutes();
+  private _forms: FormsRoutes = new FormsRoutes();
+  private _reports: ReportsRoutes = new ReportsRoutes();
+  private _files: FilesRoutes = new FilesRoutes();
+  private _search: SearchRoutes = new SearchRoutes();
 
   /**
    * Constructor
-   * @param clientId Client ID
-   * @param clientSecret Client Secret
-   * @param privateKey Private Key
-   * @param subscriber User ID to use
-   * @param url URL to Xenqy API (Default https://xenqu.com/api)
+   * @param clientId Client ID received from Xenqu Admin
+   * @param clientSecret Client Secret received from Xenqu Admin
+   * @param privateKey Private Key that you generated, and shared the public counterpart with Xenqu Admin
+   * @param subscriber User ID received from Xenqu Admin
+   * @param url URL to Xenqu API. Defaults to https://xenqu.com/api
    */
   constructor(clientId: string, clientSecret: string, privateKey: string, subscriber: string, url: string = 'https://xenqu.com/api') {
     this.clientId = clientId;
@@ -47,50 +47,42 @@ export default class XenquAPI {
   }
 
   /**
-   * Init Connection to API
+   * Initialize Connection to API
    */
-  public init(): Promise<any> {
+  public init(): Promise<boolean> {
     if (!this.isInit) {
-      return this.reauthOath2().then((oath: Oath2Token) => {
-        this.base.updateOath(oath)
-        // Update all of our routes
-        this.account.update(this.base);
-        this.contact.update(this.base);
-        this.tracking.update(this.base);
-        this.forms.update(this.base);
-        this.reports.update(this.base);
-        this.files.update(this.base);
-        this.search.update(this.base);
-        this.isInit = true;
-        return true;
-      });
+      return this.reauth();
     } else {
       throw new Error("Already initiated!")
     }
   }
 
   /**
-   * Authorize Connection and get Oath token
-   * @private
+   * Reauth Connection to API
    */
-  private reauthOath2(): Promise<any> {
-    // Base 64 encode  for auth header
-    const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
-    const payload = {
-      exp: (new Date()).getTime() / 1000 + 300,
-      iss: this.clientId,
-      aud: "https://xenqu.com",
-      sub: this.subscriber,
-    }
-    const token = jwt.sign(payload, this.privateKey, {algorithm: "RS256"})
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': authorization
-    }
-    const body = 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + token;
-    return this.base.makeOathRequest('/oauth2/token', headers, body);
+  public reauth(): Promise<boolean> {
+    this.isInit = false;
+    return this.base.makeOath2Request(this.clientId, this.clientSecret, this.subscriber, this.privateKey).then((data: any) => {
+      this.base.updateOath(new Oath2Token(data))
+      this.updateRoutes();
+      this.isInit = true;
+      return true;
+    });
   }
 
+  /**
+   * Update all Routes
+   * @private
+   */
+  private updateRoutes() {
+    this.account.update(this.base);
+    this.contact.update(this.base);
+    this.tracking.update(this.base);
+    this.forms.update(this.base);
+    this.reports.update(this.base);
+    this.files.update(this.base);
+    this.search.update(this.base);
+  }
 
   /**
    * Get Account Routes

@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EssiumLLC/lib-xenqu-node.git"
+    "url": "git+https://github.com/EssiumLLC/lib-xenqu-nodejs.git"
   },
   "keywords": [
     "essium",
@@ -26,9 +26,9 @@
   "author": "Soren Zaiser",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/EssiumLLC/lib-xenqu-node/issues"
+    "url": "https://github.com/EssiumLLC/lib-xenqu-nodejs/issues"
   },
-  "homepage": "https://github.com/EssiumLLC/lib-xenqu-node#readme",
+  "homepage": "https://github.com/EssiumLLC/lib-xenqu-nodejs#readme",
   "dependencies": {
     "axios": "^0.21.0",
     "crypto": "^1.0.1",

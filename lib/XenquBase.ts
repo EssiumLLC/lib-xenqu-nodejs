@@ -3,6 +3,7 @@ import {randomBytes} from 'crypto'
 import axios, {AxiosResponse} from 'axios'
 // @ts-ignore
 import { rfc3986, sign } from "oauth-sign";
+import * as jwt from "jsonwebtoken";
 
 
 /*
@@ -24,15 +25,23 @@ export default class XenquBase {
     this.oath = new Oath2Token();
   }
 
+  /**
+   * Update Oath Parameters
+   * @param oath Oath Information
+   */
   updateOath(oath: Oath2Token) {
     this.oath = oath;
   }
 
+  /**
+   * Make Get Request
+   * @param path URL path to append
+   * @param parameters Parameters that may get encoded into oath token
+   */
   makeGet(path: string, parameters?: any[]) {
-
     return axios(this.baseUrl + path, {
       method: "GET",
-      headers: {'authorization': this.getOathHeaders("GET", path, undefined, parameters)}
+      headers: {'authorization': this.getOath1Headers("GET", path, parameters)}
     }).then((res: AxiosResponse<any>) => {
         if(res.status > 199 && res.status < 210) {
           return res.data;
@@ -44,11 +53,102 @@ export default class XenquBase {
     })
   }
 
-  makeOathRequest(path: string, headers: any, payload: string): Promise<Oath2Token> {
+  /**
+   * Make POST request
+   * @param path URL path to append
+   * @param payload Stringified JSON data to send
+   * @param parameters Parameters that may get encoded into oath token
+   */
+  makePost(path: string, payload: string, parameters?: any[]): Promise<any> {
     return axios(this.baseUrl + path, {
       method: "POST",
-      headers: headers,
+      headers: {'authorization': this.getOath1Headers("POST", path, parameters), "Content-Type": 'application/json'},
       data: payload,
+      responseType: 'json'
+    }).then((res: AxiosResponse<any>) => {
+      if (res.status > 199 && res.status < 210) {
+        if(Array.isArray(res.data.data)) {
+          return res.data.data;
+        } else {
+          return res.data;
+        }
+      } else {
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+      }
+    }).catch((err) => {
+      throw new Error(err)
+    })
+  }
+
+  /**
+   * Make PUT request
+   * @param path URL path to append
+   * @param payload Stringified JSON data to send
+   * @param parameters Parameters that may get encoded into oath token
+   */
+  makePut(path: string, payload: string, parameters?: any[]): Promise<any> {
+    return axios(this.baseUrl + path, {
+      method: "PUT",
+      headers: {'authorization': this.getOath1Headers("PUT", path, parameters), "Content-Type": 'application/json'},
+      data: payload,
+      responseType: 'json'
+    }).then((res: AxiosResponse<any>) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.data;
+      } else {
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+      }
+    }).catch((err) => {
+      throw new Error(err)
+    })
+  }
+
+  /**
+   * Make Delete request
+   * @param path URL path to append
+   * @param payload optional Stringified JSON data to send
+   * @param parameters Parameters that may get encoded into oath token
+   */
+  makeDelete(path: string, payload?: string, parameters?: any[]): Promise<any> {
+    return axios(this.baseUrl + path, {
+      method: "DELETE",
+      headers: {'authorization': this.getOath1Headers("DELETE", path, parameters), "Content-Type": 'application/json'},
+      data: payload,
+      responseType: 'json'
+    }).then((res: AxiosResponse<any>) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.data;
+      } else {
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+      }
+    }).catch((err) => {
+      throw new Error(err)
+    })
+  }
+
+  /**
+   *
+   */
+  makeOath2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<Oath2Token> {
+    // Base 64 encode  for auth header
+    const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
+    const payload = {
+      exp: (new Date()).getTime() / 1000 + 300,
+      iss: clientId,
+      aud: "https://xenqu.com",
+      sub: subscriber,
+    }
+    const token = jwt.sign(payload, privateKey, {algorithm: "RS256"})
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': authorization
+    }
+    const body = 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + token;
+
+    return axios(this.baseUrl + '/oauth2/token', {
+      method: "POST",
+      headers: headers,
+      data: body,
       responseType: 'json'
     }).then((res: AxiosResponse<any>) => {
       if (res.status > 199 && res.status < 210) {
@@ -61,11 +161,7 @@ export default class XenquBase {
     })
   }
 
-  makePut() {
-
-  }
-
-  private getOathHeaders(httpMethod: string, path: string, payload?: any, additionalParams?: any[]): string {
+  private getOath1Headers(httpMethod: string, path: string, additionalParams?: any[]): string {
     const url = this.baseUrl + path;
     const p: any = {
         oauth_consumer_key : this.clientId,
