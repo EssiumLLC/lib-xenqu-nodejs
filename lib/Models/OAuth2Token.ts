@@ -1,4 +1,4 @@
-export default class Oath2Token {
+export default class OAuth2Token {
   private _token: string;
   private _secret: string;
   private _expires: Date;
@@ -13,7 +13,7 @@ export default class Oath2Token {
   private fromJson(json: any) {
     this._token = json.token;
     this._secret = json.token_secret;
-    this._expires = new Date(json.expires);
+    this._expires = new Date(json.expires * 1000);
   }
 
   get token(): string {

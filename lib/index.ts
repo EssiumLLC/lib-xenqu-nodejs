@@ -1,13 +1,12 @@
 import XenquBase from "./XenquBase";
-import Oath2Token from "./Models/Oath2Token";
+import OAuth2Token from "./Models/OAuth2Token";
 import AccountRoutes from "./Routes/AccountRoutes";
-import ContactRoutes from "./Routes/ContactRoutes";
 import TrackingRoutes from "./Routes/TrackingRoutes";
-import FormsRoutes from "./Routes/FormsRoutes";
 import ReportsRoutes from "./Routes/ReportsRoutes";
-import FilesRoutes from "./Routes/FilesRoutes";
 import SearchRoutes from "./Routes/SearchRoutes";
-import * as fs from "fs";
+import ContactRoutes from "./Routes/ContactRoutes";
+import FormsRoutes from "./Routes/FormsRoutes";
+import FilesRoutes from "./Routes/FilesRoutes";
 
 export default class XenquAPI {
 
@@ -62,8 +61,8 @@ export default class XenquAPI {
    */
   public reauth(): Promise<boolean> {
     this.isInit = false;
-    return this.base.makeOath2Request(this.clientId, this.clientSecret, this.subscriber, this.privateKey).then((data: any) => {
-      this.base.updateOath(new Oath2Token(data))
+    return this.base.makeOath2Request(this.clientId, this.clientSecret, this.subscriber, this.privateKey).then((data: OAuth2Token) => {
+      this.base.updateOath(data)
       this.updateRoutes();
       this.isInit = true;
       return true;

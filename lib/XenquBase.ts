@@ -1,4 +1,4 @@
-import Oath2Token from "./Models/Oath2Token";
+import OAuth2Token from "./Models/OAuth2Token";
 import {randomBytes} from 'crypto'
 import axios, {AxiosResponse} from 'axios'
 // @ts-ignore
@@ -16,21 +16,21 @@ export default class XenquBase {
   private baseUrl: string;
   private clientId: string;
   private clientSecret: string;
-  private oath: Oath2Token;
+  private oauth: OAuth2Token;
 
   constructor(baseUrl: string, clientId?: string, clientSecret?: string) {
     this.baseUrl = baseUrl;
     this.clientId = clientId || '';
     this.clientSecret = clientSecret || '';
-    this.oath = new Oath2Token();
+    this.oauth = new OAuth2Token();
   }
 
   /**
    * Update Oath Parameters
    * @param oath Oath Information
    */
-  updateOath(oath: Oath2Token) {
-    this.oath = oath;
+  updateOath(oath: OAuth2Token) {
+    this.oauth = oath;
   }
 
   /**
@@ -48,8 +48,8 @@ export default class XenquBase {
         } else {
           throw new Error(`Error Authorizing (${res.status}: ${res.statusText}): ${res.data}`)
         }
-    }).catch((error: any) => {
-      throw new Error(error)
+    }).catch((error) => {
+      throw this.throwXenquApiError(error);
     })
   }
 
@@ -76,7 +76,7 @@ export default class XenquBase {
         throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
       }
     }).catch((err) => {
-      throw new Error(err)
+      throw this.throwXenquApiError(err);
     })
   }
 
@@ -99,7 +99,7 @@ export default class XenquBase {
         throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
       }
     }).catch((err) => {
-      throw new Error(err)
+      throw this.throwXenquApiError(err);
     })
   }
 
@@ -122,14 +122,14 @@ export default class XenquBase {
         throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
       }
     }).catch((err) => {
-      throw new Error(err)
+      throw this.throwXenquApiError(err);
     })
   }
 
   /**
    *
    */
-  makeOath2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<Oath2Token> {
+  makeOath2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<OAuth2Token> {
     // Base 64 encode  for auth header
     const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
     const payload = {
@@ -152,12 +152,12 @@ export default class XenquBase {
       responseType: 'json'
     }).then((res: AxiosResponse<any>) => {
       if (res.status > 199 && res.status < 210) {
-        return new Oath2Token(res.data);
+        return new OAuth2Token(res.data);
       } else {
         throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
       }
     }).catch((err) => {
-      throw new Error(err)
+      throw this.throwXenquApiError(err);
     })
   }
 
@@ -165,14 +165,29 @@ export default class XenquBase {
     const url = this.baseUrl + path;
     const p: any = {
         oauth_consumer_key : this.clientId,
-        oauth_token : this.oath.token,
+        oauth_token : this.oauth.token,
         oauth_nonce : randomBytes(12).toString('base64'),
         oauth_timestamp : (Math.floor(Date.now() / 1000)),
         oauth_signature_method : 'HMAC-SHA1',
         oauth_version : '1.0',
       ... additionalParams
       };
-    const sig = sign('HMAC-SHA1', httpMethod, url, p, this.clientSecret, this.oath.secret);
+    const sig = sign('HMAC-SHA1', httpMethod, url, p, this.clientSecret, this.oauth.secret);
     return `OAuth oauth_consumer_key="${p.oauth_consumer_key}",oauth_token="${p.oauth_token}",oauth_signature_method="${p.oauth_signature_method}",oauth_timestamp="${p.oauth_timestamp}",oauth_nonce="${p.oauth_nonce}",oauth_version="${p.oauth_version}",oauth_signature="${sig}"`;
+  }
+
+  private throwXenquApiError(error: any) {
+    const e = new Error(error);
+    e.name = '\n XenquAPI';
+    e.message = 'Received non-200 from API || [' + error.response.status + ']: ' + error.response.statusText +
+                '\n Response Message: ' + error.response.data;
+    switch(error.response.status) {
+      case 400: e.name = '\n XenquBadRequest'; break;
+      case 401: e.name = '\n XenquUnauthorized'; break;
+      case 403: e.name = '\n XenquForbidden'; break;
+      case 404: e.name = '\n XenquNotFound'; break;
+      case 500: e.name = '\n XenquInternalServerError'; break;
+    }
+    return e;
   }
 }

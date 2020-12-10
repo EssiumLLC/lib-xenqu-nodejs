@@ -2,7 +2,7 @@ import QueueItem from "./QueueItem";
 
 export class Queue {
   private _forceOrdering: number;
-  private _items: QueueItem[];
+  private _items: any[];
   private _primaryActorId: number;
   private _primaryActorRole: string;
   private _primaryActorRoleSlug: string;
@@ -11,14 +11,14 @@ export class Queue {
   private _title: string;
 
 
-  constructor(forceOrdering?: number, items?: QueueItem[], primaryActorId?: number, primaryActorRole?: string, primaryActorRoleSlug?: string, progressBinId?: null, section?: number, title?: string) {
-    this._forceOrdering = forceOrdering || -1;
+  constructor(forceOrdering?: number, items?: any[], primaryActorId?: number, primaryActorRole?: string, primaryActorRoleSlug?: string, progressBinId?: null, section?: number, title?: string) {
+    this._forceOrdering = forceOrdering || 0;
     this._items = items || [];
     this._primaryActorId = primaryActorId || -1;
-    this._primaryActorRole = primaryActorRole || "";
-    this._primaryActorRoleSlug = primaryActorRoleSlug || "";
+    this._primaryActorRole = primaryActorRole || "Worker";
+    this._primaryActorRoleSlug = primaryActorRoleSlug || "worker";
     this._progressBinId = progressBinId || -1;
-    this._section = section || -1;
+    this._section = section || 1;
     this._title = title || "";
   }
 
@@ -31,7 +31,7 @@ export class Queue {
       section: this.section,
       force_ordering: this.forceOrdering,
       progress_bin_id: this.progressBinId,
-      items: this.items.map((qi) => { qi.toJson() })
+      items: this.items,
     }
   }
 
@@ -43,7 +43,7 @@ export class Queue {
     this.section = json.section;
     this.forceOrdering = json.force_ordering;
     this.progressBinId = json.progress_bin_id;
-    this.items = json.items.map((qi: any) => new QueueItem().fromJson(qi));
+    this.items = json.items;
     return this;
   }
 
@@ -55,11 +55,11 @@ export class Queue {
     this._forceOrdering = value;
   }
 
-  get items(): QueueItem[] {
+  get items(): any[] {
     return this._items;
   }
 
-  set items(value: QueueItem[]) {
+  set items(value: any[]) {
     this._items = value;
   }
 
