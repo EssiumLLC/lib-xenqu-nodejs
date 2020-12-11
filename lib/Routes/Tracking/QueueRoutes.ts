@@ -52,7 +52,7 @@ export default class QueueRoutes {
    * @param queueId Queue ID to delete
    */
   deleteQueue(groupId: string, queueId: string) {
-    return this.base.makeDelete(`/tracking/groups/${groupId}/queues`)
+    return this.base.makeDelete(`/tracking/groups/${groupId}/queues/${queueId}`)
   }
 
 }

@@ -179,8 +179,11 @@ export default class XenquBase {
   private throwXenquApiError(error: any) {
     const e = new Error(error);
     e.name = '\n XenquAPI';
-    e.message = 'Received non-200 from API || [' + error.response.status + ']: ' + error.response.statusText +
-                '\n Response Message: ' + error.response.data;
+    e.message =
+      '\n Message: Received non-200 from API' +
+      '\n URL: ' + error.config.method + ' ' + error.config.url +
+      '\n Response Code: [' + error.response.status + '] ' + error.response.statusText +
+      '\n Response Message: ' + error.response.data;
     switch(error.response.status) {
       case 400: e.name = '\n XenquBadRequest'; break;
       case 401: e.name = '\n XenquUnauthorized'; break;
