@@ -23,7 +23,8 @@ export default class ReportsRoutes {
    * @param offset Offset to access by. Results are always pagenated. Defaults to 0
    */
   public getReportResults(jobId: string, count: number = 1, sortBy: string = "run_date:asc", status: number = 3, offset: number = 0): Promise<any> {
-    return this.base.makeGet(`/reporting/results?job_id=${jobId}&status=${status}&count=${count}&offset=${offset}&sortby=${sortBy}`);
+    const params = {job_id: jobId, status: status, count: count, offset: offset, sortby: sortBy}
+    return this.base.makeGet(`/reporting/results`, params);
   }
 
   /**

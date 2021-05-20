@@ -132,7 +132,7 @@ export default class ItemsRoutes {
    * @param attachmentId Attachment ID to add files to
    * @param data File Data from Files API
    */
-  addAttachment(attachmentId: string, data: {filename: string, _temp_handle_id: string}) {
+  addAttachment(attachmentId: string, data: {filename: string, _temp_handle_id: string, tracking_id: number, content_type: string, order?: number}) {
     return this.base.makePost(`/tracking/attachments/${attachmentId}/files`, JSON.stringify(data))
   }
 

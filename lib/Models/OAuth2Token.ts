@@ -20,11 +20,23 @@ export default class OAuth2Token {
     return this._token;
   }
 
+  set token(value: string) {
+    this._token = value;
+  }
+
   get secret(): string {
     return this._secret;
   }
 
+  set secret(value: string) {
+    this._secret = value;
+  }
+
   get expires(): Date {
     return this._expires;
+  }
+
+  set expires(value: Date) {
+    this._expires = value;
   }
 }

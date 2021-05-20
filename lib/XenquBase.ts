@@ -1,9 +1,8 @@
 import OAuth2Token from "./Models/OAuth2Token";
-import {randomBytes} from 'crypto'
-import axios, {AxiosResponse} from 'axios'
-// @ts-ignore
-import { rfc3986, sign } from "oauth-sign";
 import * as jwt from "jsonwebtoken";
+import WebTokenAuth from "./Models/WebTokenAuth";
+import OAuth1Credentials from "./Models/OAuth1Credentials";
+const SimpleOAuth = require('../node_modules/SimpleOAuth/src/simple-oauth')
 
 
 /*
@@ -17,20 +16,16 @@ export default class XenquBase {
   private clientId: string;
   private clientSecret: string;
   private oauth: OAuth2Token;
+  private webOauth: WebTokenAuth;
+  private useWebAuth: boolean;
 
-  constructor(baseUrl: string, clientId?: string, clientSecret?: string) {
+  constructor(baseUrl: string, clientId?: string, clientSecret?: string, useWebAuth: boolean = false) {
     this.baseUrl = baseUrl;
     this.clientId = clientId || '';
     this.clientSecret = clientSecret || '';
     this.oauth = new OAuth2Token();
-  }
-
-  /**
-   * Update Oath Parameters
-   * @param oath Oath Information
-   */
-  updateOath(oath: OAuth2Token) {
-    this.oauth = oath;
+    this.webOauth = new WebTokenAuth();
+    this.useWebAuth = useWebAuth;
   }
 
   /**
@@ -38,15 +33,16 @@ export default class XenquBase {
    * @param path URL path to append
    * @param parameters Parameters that may get encoded into oath token
    */
-  makeGet(path: string, parameters?: any[]) {
-    return axios(this.baseUrl + path, {
+  makeGet(path: string, parameters?: {}) {
+    const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
+    return fetch(this.baseUrl + path + params, {
       method: "GET",
       headers: {'authorization': this.getOath1Headers("GET", path, parameters)}
-    }).then((res: AxiosResponse<any>) => {
+    }).then((res: Response) => {
         if(res.status > 199 && res.status < 210) {
-          return res.data;
+          return res.json();
         } else {
-          throw new Error(`Error Authorizing (${res.status}: ${res.statusText}): ${res.data}`)
+          throw new Error(`Error Authorizing (${res.status}: ${res.statusText}): ${res}`)
         }
     }).catch((error) => {
       throw this.throwXenquApiError(error);
@@ -59,21 +55,23 @@ export default class XenquBase {
    * @param payload Stringified JSON data to send
    * @param parameters Parameters that may get encoded into oath token
    */
-  makePost(path: string, payload: string, parameters?: any[]): Promise<any> {
-    return axios(this.baseUrl + path, {
+  makePost(path: string, payload: string, parameters?: {}): Promise<any> {
+    const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
+    return fetch(this.baseUrl + path + params, {
       method: "POST",
       headers: {'authorization': this.getOath1Headers("POST", path, parameters), "Content-Type": 'application/json'},
-      data: payload,
-      responseType: 'json'
-    }).then((res: AxiosResponse<any>) => {
+      body: payload,
+    }).then((res: Response) => {
       if (res.status > 199 && res.status < 210) {
-        if(Array.isArray(res.data.data)) {
-          return res.data.data;
-        } else {
-          return res.data;
-        }
+        return res.json()
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
+      }
+    }).then((json) => {
+      if(Array.isArray(json.data)) {
+        return json.data;
+      } else {
+        return json;
       }
     }).catch((err) => {
       throw this.throwXenquApiError(err);
@@ -86,17 +84,17 @@ export default class XenquBase {
    * @param payload Stringified JSON data to send
    * @param parameters Parameters that may get encoded into oath token
    */
-  makePut(path: string, payload: string, parameters?: any[]): Promise<any> {
-    return axios(this.baseUrl + path, {
+  makePut(path: string, payload: string, parameters?: {}): Promise<any> {
+    const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
+    return fetch(this.baseUrl + path + params, {
       method: "PUT",
       headers: {'authorization': this.getOath1Headers("PUT", path, parameters), "Content-Type": 'application/json'},
-      data: payload,
-      responseType: 'json'
-    }).then((res: AxiosResponse<any>) => {
+      body: payload,
+    }).then((res: Response) => {
       if (res.status > 199 && res.status < 210) {
-        return res.data;
+        return res.json();
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
       }
     }).catch((err) => {
       throw this.throwXenquApiError(err);
@@ -109,17 +107,17 @@ export default class XenquBase {
    * @param payload optional Stringified JSON data to send
    * @param parameters Parameters that may get encoded into oath token
    */
-  makeDelete(path: string, payload?: string, parameters?: any[]): Promise<any> {
-    return axios(this.baseUrl + path, {
+  makeDelete(path: string, payload?: string, parameters?: {}): Promise<any> {
+    const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
+    return fetch(this.baseUrl + path + params, {
       method: "DELETE",
       headers: {'authorization': this.getOath1Headers("DELETE", path, parameters), "Content-Type": 'application/json'},
-      data: payload,
-      responseType: 'json'
-    }).then((res: AxiosResponse<any>) => {
+      body: payload,
+    }).then((res: Response) => {
       if (res.status > 199 && res.status < 210) {
-        return res.data;
+        return res.json();
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
       }
     }).catch((err) => {
       throw this.throwXenquApiError(err);
@@ -127,9 +125,9 @@ export default class XenquBase {
   }
 
   /**
-   *
+   *  Makes a request with OAuth2.0 Header to get OAuth1.0 headers to use in the rest of the API
    */
-  makeOath2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<OAuth2Token> {
+  makeOAuth2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<boolean> {
     // Base 64 encode  for auth header
     const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
     const payload = {
@@ -145,35 +143,169 @@ export default class XenquBase {
     }
     const body = 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + token;
 
-    return axios(this.baseUrl + '/oauth2/token', {
+    return fetch(this.baseUrl + '/oauth2/token', {
       method: "POST",
       headers: headers,
-      data: body,
-      responseType: 'json'
-    }).then((res: AxiosResponse<any>) => {
+      body: body
+    }).then((res: Response) => {
       if (res.status > 199 && res.status < 210) {
-        return new OAuth2Token(res.data);
+        return res.json();
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res.data}`)
+        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
       }
+    }).then((json) => {
+      this.oauth = new OAuth2Token(json)
+      return true
     }).catch((err) => {
       throw this.throwXenquApiError(err);
     })
   }
 
-  private getOath1Headers(httpMethod: string, path: string, additionalParams?: any[]): string {
+  /**
+   *  Makes a request to get a token
+   */
+  requestToken(callback: string): Promise<any> {
+    const url = this.baseUrl + '/oauth/request_token'
+    const oauth = this.getOath1HeadersWebAuth('POST', url, false, callback);
+
+    return fetch(url, {
+      method: "POST",
+      mode: 'cors',
+      headers: {'Authorization': oauth}
+    }).then((res: Response) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.text();
+      } else {
+        throw new Error(`Error at RequestToken Endpoint: ${res}`)
+      }
+    }).then((text: string) => {
+      this.webOauth = new WebTokenAuth(text)
+      return this.webOauth.token;
+    }).catch((err) => {
+      throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   *  Makes a request with a token verifier to get our personal signing stuffs
+   */
+  accessToken(verifier: string): Promise<boolean> {
+    const url = this.baseUrl + '/oauth/access_token'
+    this.webOauth.verifier = verifier;
+    const oauth = this.getOath1HeadersWebAuth('POST', url, true);
+
+    return fetch(url, {
+      method: "POST",
+      mode: "cors",
+      headers: { 'Authorization': oauth },
+    }).then((res: Response) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.text();
+      } else {
+        throw new Error(`Error at RequestToken Endpoint: ${res}`)
+      }
+    }).then((text: string) => {
+      this.webOauth = new WebTokenAuth(text);
+      return true;
+    }).catch((err) => {
+      throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   * Get OAuth1.0 Credentials
+   */
+  getOAuth1Credentials(): OAuth1Credentials {
+    const creds = {
+      consumer_key: this.clientId,
+      consumer_secret: this.clientSecret,
+      token: (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
+      token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret
+    }
+    return new OAuth1Credentials(creds);
+  }
+
+  /**
+   * Manually set OAuth1.0 credentials, rather than having them be set by an authentication flow
+   * @param credentials Credentials to set
+   */
+  setOAuth1Credentials(credentials: OAuth1Credentials) {
+    this.clientId = credentials.consumerKey;
+    this.clientSecret = credentials.consumerSecret;
+    if (!this.useWebAuth) {
+      this.oauth.token = credentials.token;
+      this.oauth.secret = credentials.secret;
+    } else {
+      this.webOauth.token = credentials.token;
+      this.webOauth.secret = credentials.secret;
+      this.webOauth.verifier = '';
+    }
+  }
+
+  /**
+   *  Makes a request to refresh the OAuth1.0 token
+   */
+  refreshToken(): Promise<boolean> {
+    const url = this.baseUrl + '/oauth/renew_token'
+    const oauth = this.getOath1Headers('POST', url);
+
+    return fetch(url, {
+      method: "POST",
+      mode: "cors",
+      headers: { 'Authorization': oauth },
+    }).then((res: Response) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.text();
+      } else {
+        throw new Error(`Error at RequestToken Endpoint: ${res}`)
+      }
+    }).then((text) => {
+      this.webOauth = new WebTokenAuth(text);
+      return true;
+    }).catch((err) => {
+      throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   * Generate OAuth1.0 Headers for General API requests
+   * @param httpMethod Request Method
+   * @param path URL Path
+   * @param additionalParams Any query parameters used in the
+   * @private
+   */
+  private getOath1Headers(httpMethod: string, path: string, additionalParams?: {} ): string {
     const url = this.baseUrl + path;
-    const p: any = {
-        oauth_consumer_key : this.clientId,
-        oauth_token : this.oauth.token,
-        oauth_nonce : randomBytes(12).toString('base64'),
-        oauth_timestamp : (Math.floor(Date.now() / 1000)),
-        oauth_signature_method : 'HMAC-SHA1',
-        oauth_version : '1.0',
-      ... additionalParams
-      };
-    const sig = sign('HMAC-SHA1', httpMethod, url, p, this.clientSecret, this.oauth.secret);
-    return `OAuth oauth_consumer_key="${p.oauth_consumer_key}",oauth_token="${p.oauth_token}",oauth_signature_method="${p.oauth_signature_method}",oauth_timestamp="${p.oauth_timestamp}",oauth_nonce="${p.oauth_nonce}",oauth_version="${p.oauth_version}",oauth_signature="${sig}"`;
+    const keys = {
+      consumer_key: this.clientId,
+      consumer_secret: this.clientSecret,
+      token:        (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
+      token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret,
+    }
+    const oauth = new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys);
+    return oauth.build();
+  }
+
+  /**
+   * Headers used when accessing RequestToken, AccessToken, or RefreshToken
+   * @param httpMethod Query Method
+   * @param url Full Request URL (not just path)
+   * @param signPersonally If true, token will be signed with token, token_secret, and token_verifier
+   * @param callback Callback URL, if required
+   * @param additionalParams Any query parameters
+   * @private
+   */
+  private getOath1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: {}): string {
+    const keys = {
+      consumer_key: this.clientId,
+      consumer_secret: this.clientSecret,
+      callback: callback,
+      token:        (signPersonally) ? this.webOauth.token : undefined,
+      token_secret: (signPersonally) ? this.webOauth.secret : undefined,
+      verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
+    }
+    const oauth = new SimpleOAuth.Header(httpMethod.toUpperCase(), url, null, keys);
+    return oauth.build()
   }
 
   private throwXenquApiError(error: any) {

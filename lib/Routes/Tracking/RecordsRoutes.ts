@@ -19,7 +19,7 @@ export default class RecordsRoutes {
    * @param groupId Tab ID to get record from
    * @param contactId Contact ID to get
    */
-  getQueue(groupId: string, contactId: string) {
+  getRecord(groupId: string, contactId: string) {
     return this.base.makeGet(`/tracking/groups/${groupId}/actors/${contactId}`)
   }
 

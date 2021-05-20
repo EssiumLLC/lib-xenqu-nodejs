@@ -22,7 +22,8 @@ export default class TabsRoutes {
    * @param offset Offset to access by. Results are always pagenated. Defaults to 0
    */
   getContacts(term: string, scope: "display_name" | "primary_email" | "primary_phone" | "org_name" | "title" | "tags" | string, count: number = 10, offset: number = 0) {
-    return this.base.makeGet(`/tracking/contacts?term=${term}&scope=${scope}&count=${count}&offset=${offset}`)
+    const params = { term: term, scope: scope, count: count, offset: offset}
+    return this.base.makeGet(`/tracking/contacts`, params)
   }
 
   /**
@@ -78,6 +79,16 @@ export default class TabsRoutes {
    */
   searchLibraries(groupId: string, query: string) {
     return this.base.makePost(`/tracking/groups/${groupId}/libraries`, JSON.stringify({title: query}))
+  }
+
+  /**
+   * Get Contact Log for a User
+   * @see [API Docs]{@link https://apidocs.xenqu.com/#ee9ddc77-a8a6-49b7-a7d7-f9a72c44d00c}
+   * @param groupId Tab ID to search
+   * @param contactId Contact ID of user
+   */
+  getContactLog(groupId: string, contactId: string) {
+    return this.base.makeGet(`/tracking/groups/${groupId}/contact_log/${contactId}`)
   }
 
 }

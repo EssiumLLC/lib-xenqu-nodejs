@@ -23,7 +23,7 @@ export default class ContactRoutes {
    * @param term Search Term
    */
   public searchContacts(term: string): Promise<any> {
-    return this.base.makeGet('/contact?term=' + term);
+    return this.base.makeGet('/contact', {term: term});
   }
 
   /**
