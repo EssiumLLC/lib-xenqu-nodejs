@@ -1,7 +1,7 @@
 {
   "name": "@essium-llc/lib-xenqu-nodejs",
-  "version": "1.0.4",
-  "description": "Based off of [these API Docs](https://apidocs.xenqu.com/)\r ### Getting Started:\r Install:\r ```shell\r npm install lib-xenqu-nodejs\r ```\r Create an API Instance:\r ```typescript\r import XenquAPI from \"lib-xenqu-nodejs\";",
+  "version": "1.1.0",
+  "description": "A NodeJS Implementation of the Xenqu API",
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "tsc",
