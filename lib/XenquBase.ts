@@ -176,7 +176,7 @@ export default class XenquBase {
       if (res.status > 199 && res.status < 210) {
         return res.text();
       } else {
-        throw new Error(`Error at RequestToken Endpoint: ${res}`)
+        throw new Error(`Error at /oauth/request_token Endpoint: ${res}`)
       }
     }).then((text: string) => {
       this.webOauth = new WebTokenAuth(text)
@@ -202,13 +202,119 @@ export default class XenquBase {
       if (res.status > 199 && res.status < 210) {
         return res.text();
       } else {
-        throw new Error(`Error at RequestToken Endpoint: ${res}`)
+        throw new Error(`Error at /oauth/access_token Endpoint: ${res}`)
       }
     }).then((text: string) => {
       this.webOauth = new WebTokenAuth(text);
       return true;
     }).catch((err) => {
       throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   *  Makes a request to refresh the OAuth1.0 token
+   */
+  refreshToken(): Promise<boolean> {
+    const url = this.baseUrl + '/oauth/renew_token'
+    const oauth = this.getOath1Headers('POST', url);
+
+    return fetch(url, {
+      method: "POST",
+      mode: "cors",
+      headers: { 'Authorization': oauth },
+    }).then((res: Response) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.text();
+      } else {
+        throw new Error(`Error at /oauth/renew_token Endpoint: ${res}`)
+      }
+    }).then((text) => {
+      this.webOauth = new WebTokenAuth(text);
+      return true;
+    }).catch((err) => {
+      throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   * Authenticate with SSO or Login data
+   * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
+   * @param additionalParameters Additional parameters needed for the signin
+   */
+  authenticate(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<string> {
+    const url = this.baseUrl + '/oauth/authenticate'
+    const toSign = {...additionalParameters, temp_token: this.webOauth.token, authenticator: authenticator} as any;
+    const oauth = this.getOath1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
+    let formData = ''
+    for (const key in toSign) if(toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
+    formData = formData.substr(1); // remove leading &
+
+    return fetch(url, {
+      method: "POST",
+      mode: "cors",
+      headers: { 'Authorization': oauth, 'content-type': 'application/x-www-form-urlencoded' },
+      body: formData,
+    }).then((res: Response) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.text();
+      } else {
+        throw new Error(`Error at /oauth/authenticate Endpoint: ${res}`)
+      }
+    }).then((text: string) => {
+      return text;
+    }).catch((err) => {
+      throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   *  After calling authenticate, you can authorize your temp_token
+   */
+  authorize(clientId: string, clientSecret: string, callback: string): Promise<string> {
+    const url = this.baseUrl + '/oauth/authorize'
+    const toSign = { temp_token: this.webOauth.token } as any;
+    const oauth = this.getOath1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
+    let formData = ''
+    for (const key in toSign) if(toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
+    formData = formData.substr(1); // remove leading &
+
+    return fetch(url, {
+      method: "POST",
+      mode: "cors",
+      headers: { 'Authorization': oauth, 'content-type': 'application/x-www-form-urlencoded' },
+      body: formData,
+    }).then((res: Response) => {
+      if (res.status > 199 && res.status < 210) {
+        return res.text();
+      } else {
+        throw new Error(`Error at /oauth/authorize Endpoint: ${res}`)
+      }
+    }).then((text: string) => {
+      return text;
+    }).catch((err) => {
+      throw this.throwXenquApiError(err);
+    })
+  }
+
+  /**
+   * Attempt to run through the whole authentication process using SSO or Username/password credentials
+   * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
+   * @param additionalParameters Additional parameters needed for the signin
+   */
+  authenticateWithSSOorUNandPW(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<boolean> {
+    return this.requestToken(callback).then(() => {
+      return this.authenticate(clientId, clientSecret, callback, authenticator, additionalParameters);
+    }).then(() => {
+      return this.authorize(clientId, clientSecret, callback);
+    }).then((data: string) => {
+      return this.accessToken(data.split('&')[1].split('=')[1]);
     })
   }
 
@@ -243,31 +349,6 @@ export default class XenquBase {
   }
 
   /**
-   *  Makes a request to refresh the OAuth1.0 token
-   */
-  refreshToken(): Promise<boolean> {
-    const url = this.baseUrl + '/oauth/renew_token'
-    const oauth = this.getOath1Headers('POST', url);
-
-    return fetch(url, {
-      method: "POST",
-      mode: "cors",
-      headers: { 'Authorization': oauth },
-    }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
-        return res.text();
-      } else {
-        throw new Error(`Error at RequestToken Endpoint: ${res}`)
-      }
-    }).then((text) => {
-      this.webOauth = new WebTokenAuth(text);
-      return true;
-    }).catch((err) => {
-      throw this.throwXenquApiError(err);
-    })
-  }
-
-  /**
    * Generate OAuth1.0 Headers for General API requests
    * @param httpMethod Request Method
    * @param path URL Path
@@ -293,18 +374,20 @@ export default class XenquBase {
    * @param signPersonally If true, token will be signed with token, token_secret, and token_verifier
    * @param callback Callback URL, if required
    * @param additionalParams Any query parameters
+   * @param clientId Override Client ID
+   * @param clientSecret Override Client Secret
    * @private
    */
-  private getOath1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: {}): string {
+  private getOath1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: {[key: string]: any}, clientId?: string, clientSecret?: string): string {
     const keys = {
-      consumer_key: this.clientId,
-      consumer_secret: this.clientSecret,
+      consumer_key: (clientId) ? clientId : this.clientId,
+      consumer_secret: (clientSecret) ? clientSecret : this.clientSecret,
       callback: callback,
       token:        (signPersonally) ? this.webOauth.token : undefined,
       token_secret: (signPersonally) ? this.webOauth.secret : undefined,
       verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
     }
-    const oauth = new SimpleOAuth.Header(httpMethod.toUpperCase(), url, null, keys);
+    const oauth = new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys);
     return oauth.build()
   }
 

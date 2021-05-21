@@ -151,12 +151,58 @@ export default class XenquAPI {
   }
 
   /**
+   * Authenticate a token with UN/PW or SSO data
+   * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
+   * @param additionalParameters Additional parameters needed for the signin
+   */
+  public authenticate(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<string> {
+    if (this.useWebFlowAuthentication) {
+      return this.base.authenticate(clientId, clientSecret, callback, authenticator, additionalParameters)
+    } else {
+      throw new Error('Xenqu-Api was not initialized to use this authentication method! Please use init().')
+    }
+  }
+
+  /**
+   * Authorize the temp_token from startWebAuth
+   * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   */
+  public authorize(clientId: string, clientSecret: string, callback: string): Promise<string> {
+    if (this.useWebFlowAuthentication) {
+      return this.base.authorize(clientId, clientSecret, callback);
+    } else {
+      throw new Error('Xenqu-Api was not initialized to use this authentication method! Please use init().')
+    }
+  }
+
+  /**
    * Finish Web-Style Authentication for Xenqu
    */
   public finishWebAuth(verifier: string): Promise<OAuth1Credentials> {
     this.isInit = false;
     if (this.useWebFlowAuthentication) {
       return this.base.accessToken(verifier).then((success: boolean) => {
+        this.updateRoutes();
+        this.isInit = true;
+        return this.base.getOAuth1Credentials();
+      })
+    } else {
+      throw new Error('Xenqu-Api was not initialized to use this authentication method! Please use init().')
+    }
+  }
+
+  /**
+   * Finish Web-Style Authentication for Xenqu
+   */
+  public attemptAuthWithUNandPWorSSO(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<OAuth1Credentials> {
+    this.isInit = false;
+    if (this.useWebFlowAuthentication) {
+      return this.base.authenticateWithSSOorUNandPW(clientId, clientSecret, callback, authenticator, additionalParameters).then((success: boolean) => {
         this.updateRoutes();
         this.isInit = true;
         return this.base.getOAuth1Credentials();
