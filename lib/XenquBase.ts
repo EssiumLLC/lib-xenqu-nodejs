@@ -2,7 +2,8 @@ import OAuth2Token from "./Models/OAuth2Token";
 import * as jwt from "jsonwebtoken";
 import WebTokenAuth from "./Models/WebTokenAuth";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
-const SimpleOAuth = require('../node_modules/SimpleOAuth/src/simple-oauth')
+// Simple OAuth from github.com/bseth99/simple-oauth-js
+const SimpleOAuth = require('./Helpers/simple-oauth')
 
 
 /*

@@ -182,6 +182,7 @@ export default class XenquAPI {
 
   /**
    * Finish Web-Style Authentication for Xenqu
+   * @param verifier Verifier token returned from login
    */
   public finishWebAuth(verifier: string): Promise<OAuth1Credentials> {
     this.isInit = false;
@@ -197,7 +198,12 @@ export default class XenquAPI {
   }
 
   /**
-   * Finish Web-Style Authentication for Xenqu
+   * Attempt to run through the whole authentication process using SSO or Username/password credentials
+   * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
+   * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
+   * @param additionalParameters Additional parameters needed for the signin
    */
   public attemptAuthWithUNandPWorSSO(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<OAuth1Credentials> {
     this.isInit = false;
