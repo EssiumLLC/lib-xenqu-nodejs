@@ -2,6 +2,7 @@ import OAuth2Token from "./Models/OAuth2Token";
 import * as jwt from "jsonwebtoken";
 import WebTokenAuth from "./Models/WebTokenAuth";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
+import XenquApiError from "./Helpers/XenquApiError";
 // Simple OAuth from github.com/bseth99/simple-oauth-js
 const SimpleOAuth = require('./Helpers/simple-oauth')
 
@@ -40,10 +41,10 @@ export default class XenquBase {
       method: "GET",
       headers: {'authorization': this.getOath1Headers("GET", path, parameters)}
     }).then((res: Response) => {
-        if(res.status > 199 && res.status < 210) {
+        if(res.ok) {
           return res.json();
         } else {
-          throw new Error(`Error Authorizing (${res.status}: ${res.statusText}): ${res}`)
+          throw res;
         }
     }).catch((error) => {
       throw this.throwXenquApiError(error);
@@ -63,10 +64,10 @@ export default class XenquBase {
       headers: {'authorization': this.getOath1Headers("POST", path, parameters), "Content-Type": 'application/json'},
       body: payload,
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.json()
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
+        throw res;
       }
     }).then((json) => {
       if(Array.isArray(json.data)) {
@@ -92,10 +93,10 @@ export default class XenquBase {
       headers: {'authorization': this.getOath1Headers("PUT", path, parameters), "Content-Type": 'application/json'},
       body: payload,
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.json();
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
+        throw res;
       }
     }).catch((err) => {
       throw this.throwXenquApiError(err);
@@ -115,10 +116,10 @@ export default class XenquBase {
       headers: {'authorization': this.getOath1Headers("DELETE", path, parameters), "Content-Type": 'application/json'},
       body: payload,
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.json();
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
+        throw res;
       }
     }).catch((err) => {
       throw this.throwXenquApiError(err);
@@ -149,10 +150,10 @@ export default class XenquBase {
       headers: headers,
       body: body
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.json();
       } else {
-        throw new Error(`Error at OAuth 2.0 Endpoint: ${res}`)
+        throw res;
       }
     }).then((json) => {
       this.oauth = new OAuth2Token(json)
@@ -174,10 +175,10 @@ export default class XenquBase {
       mode: 'cors',
       headers: {'Authorization': oauth}
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.text();
       } else {
-        throw new Error(`Error at /oauth/request_token Endpoint: ${res}`)
+        throw res;
       }
     }).then((text: string) => {
       this.webOauth = new WebTokenAuth(text)
@@ -200,10 +201,10 @@ export default class XenquBase {
       mode: "cors",
       headers: { 'Authorization': oauth },
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.text();
       } else {
-        throw new Error(`Error at /oauth/access_token Endpoint: ${res}`)
+        throw res;
       }
     }).then((text: string) => {
       this.webOauth = new WebTokenAuth(text);
@@ -225,10 +226,10 @@ export default class XenquBase {
       mode: "cors",
       headers: { 'Authorization': oauth },
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.text();
       } else {
-        throw new Error(`Error at /oauth/renew_token Endpoint: ${res}`)
+        throw res;
       }
     }).then((text) => {
       this.webOauth = new WebTokenAuth(text);
@@ -260,10 +261,10 @@ export default class XenquBase {
       headers: { 'Authorization': oauth, 'content-type': 'application/x-www-form-urlencoded' },
       body: formData,
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.text();
       } else {
-        throw new Error(`Error at /oauth/authenticate Endpoint: ${res}`)
+        throw res;
       }
     }).then((text: string) => {
       return text;
@@ -289,10 +290,10 @@ export default class XenquBase {
       headers: { 'Authorization': oauth, 'content-type': 'application/x-www-form-urlencoded' },
       body: formData,
     }).then((res: Response) => {
-      if (res.status > 199 && res.status < 210) {
+      if (res.ok) {
         return res.text();
       } else {
-        throw new Error(`Error at /oauth/authorize Endpoint: ${res}`)
+        throw res;
       }
     }).then((text: string) => {
       return text;
@@ -393,20 +394,13 @@ export default class XenquBase {
   }
 
   private throwXenquApiError(error: any) {
-    const e = new Error(error);
-    e.name = '\n XenquAPI';
-    e.message =
-      '\n Message: Received non-200 from API' +
-      '\n URL: ' + error.config.method + ' ' + error.config.url +
-      '\n Response Code: [' + error.response.status + '] ' + error.response.statusText +
-      '\n Response Message: ' + error.response.data;
-    switch(error.response.status) {
-      case 400: e.name = '\n XenquBadRequest'; break;
-      case 401: e.name = '\n XenquUnauthorized'; break;
-      case 403: e.name = '\n XenquForbidden'; break;
-      case 404: e.name = '\n XenquNotFound'; break;
-      case 500: e.name = '\n XenquInternalServerError'; break;
+    if (typeof error === 'object' && error.url !== undefined && error.status !== undefined) {
+      return new XenquApiError(error);
+    } else if (typeof error === 'object') {
+      error._error_name_ = "XenquAPI";
+      return error;
+    } else {
+      return error
     }
-    return e;
   }
 }

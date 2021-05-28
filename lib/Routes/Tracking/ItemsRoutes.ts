@@ -19,7 +19,7 @@ export default class ItemsRoutes {
    * @see [API Docs]{@link https://apidocs.xenqu.com/#96bd981d-1505-4353-86f7-35f17d5a2f69}
    * @param queued Which list to return. "now" is everything the user must act upon. "complete" is everything they have previously acted upon.
    * @param sortCol Column to sort by. Allowed: relevance,create_date,last_log_date,schedule_date,priority,item_title
-   * @param sortAscending Whether to sort ascending or now
+   * @param sortAscending Whether to sort ascending or not
    * @param offset Offset to access by. Results are always pagenated. Defaults to 0
    * @param count Number of items to return. Defaults to 20
    */
@@ -117,7 +117,7 @@ export default class ItemsRoutes {
   }
 
   /**
-   * For tracking items of type "attachment", list all the files associated with the item
+   * For tracking items of type "attachment", get file
    * @see [API Docs]{@link https://apidocs.xenqu.com/#cd32010b-15e7-4287-aa8d-4e81645eec3d}
    * @param attachmentId Attachment ID to get files from
    * @param fileId File ID to get
@@ -127,17 +127,17 @@ export default class ItemsRoutes {
   }
 
   /**
-   * For tracking items of type "attachment", list all the files associated with the item
+   * For tracking items of type "attachment", add attachment to item
    * @see [API Docs]{@link https://apidocs.xenqu.com/#db3c24c6-a6d7-4f44-8eb3-9a82b70753e3}
    * @param attachmentId Attachment ID to add files to
    * @param data File Data from Files API
    */
-  addAttachment(attachmentId: string, data: {filename: string, _temp_handle_id: string, tracking_id: number, content_type: string, order?: number}) {
+  addAttachment(attachmentId: string, data: {filename: string, _temp_handle_id: string, tracking_id: number, content_type: string}) {
     return this.base.makePost(`/tracking/attachments/${attachmentId}/files`, JSON.stringify(data))
   }
 
   /**
-   * For tracking items of type "attachment", list all the files associated with the item
+   * For tracking items of type "attachment", update an attachment
    * @see [API Docs]{@link https://apidocs.xenqu.com/#0b52cc8c-40e4-40d6-8b95-266f7c8f139d}
    * @param attachmentId Attachment ID to update files of
    * @param data File Data from Files API
@@ -147,13 +147,22 @@ export default class ItemsRoutes {
   }
 
   /**
-   * For tracking items of type "attachment", list all the files associated with the item
+   * For tracking items of type "attachment", remove a file
    * @see [API Docs]{@link https://apidocs.xenqu.com/#2026a2a1-5455-4e60-a782-649b8101b7e2}
    * @param attachmentId Attachment ID
-   * @param fileId File ID to get
+   * @param fileId File ID to remove
    */
   deleteAttachment(attachmentId: string, fileId: string) {
     return this.base.makeDelete(`/tracking/attachments/${attachmentId}/files/${fileId}`);
+  }
+
+  /**
+   * Run Rules on an attachment item
+   * @param itemId Item ID to run rules on
+   * @param ruleRoute Rule Route to run. Ex: /run_rules/remove/<template_id> would be passed as ['remove', '<template_id>']
+   */
+  runRulesOnAttachment(itemId: string, ruleRoute: string[]) {
+    return this.base.makeGet(`/tracking/attachments/${itemId}/run_rules/${ruleRoute.join('/')}`);
   }
 
 }
