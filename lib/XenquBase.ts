@@ -20,6 +20,7 @@ export default class XenquBase {
   private oauth: OAuth2Token;
   private webOauth: WebTokenAuth;
   private useWebAuth: boolean;
+  private errorCallbacks: {[key: string]: (data?: XenquApiError) => void};
 
   constructor(baseUrl: string, clientId?: string, clientSecret?: string, useWebAuth: boolean = false) {
     this.baseUrl = baseUrl;
@@ -28,6 +29,7 @@ export default class XenquBase {
     this.oauth = new OAuth2Token();
     this.webOauth = new WebTokenAuth();
     this.useWebAuth = useWebAuth;
+    this.errorCallbacks = {};
   }
 
   /**
@@ -393,9 +395,43 @@ export default class XenquBase {
     return oauth.build()
   }
 
+  /**
+   * Register an error handler with an ID
+   * @param id Error Handler Identifier
+   * @param callback Callback function
+   * @private
+   */
+  registerErrorHandler(id: string, callback: (data?: XenquApiError) => void): {id: string} {
+    this.errorCallbacks[id] = callback;
+    return {id: id};
+  }
+
+  /**
+   * Remove an error handler with an ID
+   * @param id Error Handler Identifier
+   * @private
+   */
+  unregisterErrorHandler(id: string): {id: string} {
+    this.errorCallbacks[id] = undefined;
+    return {id: id};
+  }
+
+  /**
+   * Execute all error handlers
+   * error: Xenqu Error to return to callback
+   * @private
+   */
+  private executeAllErrorHandlers(error: XenquApiError) {
+    Object.keys(this.errorCallbacks).forEach((key: string) => {
+      this.errorCallbacks[key](error);
+    })
+  }
+
   private throwXenquApiError(error: any) {
     if (typeof error === 'object' && error.url !== undefined && error.status !== undefined) {
-      return new XenquApiError(error);
+      const e = new XenquApiError(error);
+      this.executeAllErrorHandlers(e);
+      return e;
     } else if (typeof error === 'object') {
       error._error_name_ = "XenquAPI";
       return error;

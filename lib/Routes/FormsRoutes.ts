@@ -1,4 +1,5 @@
 import XenquBase from "../XenquBase";
+import GeneratePDFOptions from "../Interfaces/GeneratePDFOptions";
 
 export default class FormsRoutes {
 
@@ -57,8 +58,9 @@ export default class FormsRoutes {
    * @param instanceId Form Instance ID to get
    * @param pdfProperties Optional properties when generating a PDF Defaults to Signed PDF with info footer.
    */
-  public generatePDF(instanceId: string, pdfProperties: {signed_pdf: true, info_footer: true}): Promise<any> {
-    return this.base.makePost(`/jform/instance/${instanceId}/pdf`, JSON.stringify(pdfProperties));
+  public generatePDF(instanceId: string, pdfProperties: GeneratePDFOptions): Promise<any> {
+    // The slash at the end is IMPORTANT!
+    return this.base.makePost(`/jform/instance/${instanceId}/pdf/`, JSON.stringify(pdfProperties));
   }
 
   /**

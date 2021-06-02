@@ -7,6 +7,7 @@ import ContactRoutes from "./Routes/ContactRoutes";
 import FormsRoutes from "./Routes/FormsRoutes";
 import FilesRoutes from "./Routes/FilesRoutes";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
+import XenquApiError from "./Helpers/XenquApiError";
 
 // This has to be exported outside of the XenquAPI Object, since it requires no auth headers, and the response is required to init our XenquAPI object
 /**
@@ -216,6 +217,23 @@ export default class XenquAPI {
     } else {
       throw new Error('Xenqu-Api was not initialized to use this authentication method! Please use init().')
     }
+  }
+
+  /**
+   * Add an id-based callback for when XenquAPI errors (ONLY XenquAPIErrors are included in this callback)
+   * @param id An Identifier for your callback
+   * @param callback Callback function
+   */
+  public addErrorHandler(id: string, callback: (data?: XenquApiError) => void): {id: string} {
+    return this.base.registerErrorHandler(id, callback);
+  }
+
+  /**
+   * Remove an id-based error callback
+   * @param id identifier for your callback
+   */
+  public removeErrorHandler(id: string): {id: string} {
+    return this.base.unregisterErrorHandler(id);
   }
 
   /**
