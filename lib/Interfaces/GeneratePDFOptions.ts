@@ -15,5 +15,5 @@ export default interface GeneratePDFOptions {
     rtf_mode_state?: any
     rtf_type?: any
     signature_page?: boolean
-    signed_pdf: true
+    signed_pdf: boolean
 }
