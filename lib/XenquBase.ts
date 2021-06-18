@@ -51,7 +51,7 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "GET",
-      headers: {'authorization': this.getOath1Headers("GET", path, parameters)}
+      headers: {'authorization': this.getOAuth1Headers("GET", path, parameters)}
     }).then((res: Response) => {
       if(res.ok) {
         return res.json();
@@ -84,7 +84,7 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "POST",
-      headers: {'authorization': this.getOath1Headers("POST", path, parameters), "Content-Type": 'application/json'},
+      headers: {'authorization': this.getOAuth1Headers("POST", path, parameters), "Content-Type": 'application/json'},
       body: payload,
     }).then((res: Response) => {
       if (res.ok) {
@@ -124,7 +124,7 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "PUT",
-      headers: {'authorization': this.getOath1Headers("PUT", path, parameters), "Content-Type": 'application/json'},
+      headers: {'authorization': this.getOAuth1Headers("PUT", path, parameters), "Content-Type": 'application/json'},
       body: payload,
     }).then((res: Response) => {
       if (res.ok) {
@@ -158,7 +158,7 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "DELETE",
-      headers: {'authorization': this.getOath1Headers("DELETE", path, parameters), "Content-Type": 'application/json'},
+      headers: {'authorization': this.getOAuth1Headers("DELETE", path, parameters), "Content-Type": 'application/json'},
       body: payload,
     }).then((res: Response) => {
       if (res.ok) {
@@ -269,7 +269,7 @@ export default class XenquBase {
    */
   refreshToken(): Promise<boolean> {
     const url = this.baseUrl + '/oauth/renew_token'
-    const oauth = this.getOath1Headers('POST', url);
+    const oauth = this.getOAuth1Headers('POST', url);
 
     return fetch(url, {
       method: "POST",
@@ -408,7 +408,7 @@ export default class XenquBase {
    * @param additionalParams Any query parameters used in the
    * @private
    */
-  private getOath1Headers(httpMethod: string, path: string, additionalParams?: {[key: string]: any} ): string {
+  private getOAuth1Headers(httpMethod: string, path: string, additionalParams?: {[key: string]: any} ): string {
     const url = this.baseUrl + path;
     const keys = {
       consumer_key: this.clientId,
@@ -416,7 +416,9 @@ export default class XenquBase {
       token:        (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
       token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret,
     }
-    return new SimplerOAuth1(httpMethod.toUpperCase(), url, keys, additionalParams).build();
+    const o = new SimplerOAuth1(url, httpMethod.toUpperCase(), keys, additionalParams).build()
+    console.log(o);
+    return o;
   }
 
   /**
