@@ -6,7 +6,7 @@ import XenquApiError from "./Helpers/XenquApiError";
 import SimplerOAuth1 from "simpler-oauth1.0";
 
 // @ts-ignore
-let fetch = fetch;
+let fetch = fetch; // Use node-fetch if we're not in the browser
 if (typeof window === 'undefined') fetch = require('node-fetch')
 
 /*
@@ -23,6 +23,7 @@ export default class XenquBase {
   private webOauth: WebTokenAuth;
   private useWebAuth: boolean;
   private errorCallbacks: {[key: string]: (data?: XenquApiError) => void};
+  private oauth2RetryVars: {clientId: string, clientSecret: string, subscriber: string, privateKey: string};
 
   constructor(baseUrl: string, clientId?: string, clientSecret?: string, useWebAuth: boolean = false) {
     this.baseUrl = baseUrl;
@@ -40,16 +41,27 @@ export default class XenquBase {
    * @param parameters Parameters that may get encoded into oath token
    */
   makeGet(path: string, parameters?: {}) {
+    return this.makeGetRecursive(path, parameters);
+  }
+
+  /**
+   * Get request recursive
+   */
+  private makeGetRecursive(path: string, parameters?: {}, retries: number = 0) {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "GET",
       headers: {'authorization': this.getOath1Headers("GET", path, parameters)}
     }).then((res: Response) => {
-        if(res.ok) {
-          return res.json();
-        } else {
-          throw res;
-        }
+      if(res.ok) {
+        return res.json();
+      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+        return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
+          return this.makeGetRecursive(path, parameters, retries + 1);
+        })
+      } else {
+        throw res;
+      }
     }).catch((error) => {
       throw this.throwXenquApiError(error);
     })
@@ -62,6 +74,13 @@ export default class XenquBase {
    * @param parameters Parameters that may get encoded into oath token
    */
   makePost(path: string, payload: string, parameters?: {}): Promise<any> {
+    return this.makePostRecursive(path, payload, parameters, 0);
+  }
+
+  /**
+   * Post Request recursive
+   */
+  private makePostRecursive(path: string, payload: string, parameters?: {}, retries: number = 0): Promise<any> {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "POST",
@@ -70,6 +89,10 @@ export default class XenquBase {
     }).then((res: Response) => {
       if (res.ok) {
         return res.json()
+      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+        return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
+          return this.makePostRecursive(path, payload, parameters, retries + 1);
+        })
       } else {
         throw res;
       }
@@ -91,6 +114,13 @@ export default class XenquBase {
    * @param parameters Parameters that may get encoded into oath token
    */
   makePut(path: string, payload: string, parameters?: {}): Promise<any> {
+    return this.makePutRecursive(path, payload, parameters, 0);
+  }
+
+  /**
+   * PUT request recursive
+   */
+  private makePutRecursive(path: string, payload: string, parameters?: {}, retries: number = 0): Promise<any> {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "PUT",
@@ -99,6 +129,10 @@ export default class XenquBase {
     }).then((res: Response) => {
       if (res.ok) {
         return res.json();
+      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+        return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
+          return this.makePutRecursive(path, payload, parameters, retries + 1);
+        })
       } else {
         throw res;
       }
@@ -114,6 +148,13 @@ export default class XenquBase {
    * @param parameters Parameters that may get encoded into oath token
    */
   makeDelete(path: string, payload?: string, parameters?: {}): Promise<any> {
+    return this.makeDeleteRecursive(path, payload, parameters, 0);
+  }
+
+  /**
+   * Delete request recursive
+   */
+  private makeDeleteRecursive(path: string, payload?: string, parameters?: {}, retries: number = 0): Promise<any> {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "DELETE",
@@ -122,6 +163,10 @@ export default class XenquBase {
     }).then((res: Response) => {
       if (res.ok) {
         return res.json();
+      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+        return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
+          return this.makeDeleteRecursive(path, payload, parameters, retries + 1);
+        })
       } else {
         throw res;
       }
@@ -134,6 +179,7 @@ export default class XenquBase {
    *  Makes a request with OAuth2.0 Header to get OAuth1.0 headers to use in the rest of the API
    */
   makeOAuth2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<boolean> {
+    this.oauth2RetryVars = {clientId: clientId, clientSecret: clientSecret, subscriber: subscriber, privateKey: privateKey}
     // Base 64 encode  for auth header
     const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
     const payload = {
