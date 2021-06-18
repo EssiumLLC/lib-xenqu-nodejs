@@ -3,9 +3,11 @@ import * as jwt from "jsonwebtoken";
 import WebTokenAuth from "./Models/WebTokenAuth";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
 import XenquApiError from "./Helpers/XenquApiError";
-// Simple OAuth from github.com/bseth99/simple-oauth-js
-const SimpleOAuth = require('./Helpers/simple-oauth')
+import SimplerOAuth1 from "simpler-oauth1.0";
 
+// @ts-ignore
+let fetch = fetch;
+if (typeof window === 'undefined') fetch = require('node-fetch')
 
 /*
 Base for making HTTP requests
@@ -309,14 +311,15 @@ export default class XenquBase {
    * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
    * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
    * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   * @param authCallback Callback URL to your application (sometimes different from 'callback')
    * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
    * @param additionalParameters Additional parameters needed for the signin
    */
-  authenticateWithSSOorUNandPW(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<boolean> {
+  authenticateWithSSOorUNandPW(clientId: string, clientSecret: string, callback: string, authCallback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<boolean> {
     return this.requestToken(callback).then(() => {
-      return this.authenticate(clientId, clientSecret, callback, authenticator, additionalParameters);
+      return this.authenticate(clientId, clientSecret, authCallback, authenticator, additionalParameters);
     }).then(() => {
-      return this.authorize(clientId, clientSecret, callback);
+      return this.authorize(clientId, clientSecret, authCallback);
     }).then((data: string) => {
       return this.accessToken(data.split('&')[1].split('=')[1]);
     })
@@ -359,7 +362,7 @@ export default class XenquBase {
    * @param additionalParams Any query parameters used in the
    * @private
    */
-  private getOath1Headers(httpMethod: string, path: string, additionalParams?: {} ): string {
+  private getOath1Headers(httpMethod: string, path: string, additionalParams?: {[key: string]: any} ): string {
     const url = this.baseUrl + path;
     const keys = {
       consumer_key: this.clientId,
@@ -367,8 +370,7 @@ export default class XenquBase {
       token:        (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
       token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret,
     }
-    const oauth = new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys);
-    return oauth.build();
+    return new SimplerOAuth1(httpMethod.toUpperCase(), url, keys, additionalParams).build();
   }
 
   /**
@@ -391,8 +393,7 @@ export default class XenquBase {
       token_secret: (signPersonally) ? this.webOauth.secret : undefined,
       verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
     }
-    const oauth = new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys);
-    return oauth.build()
+    return new SimplerOAuth1(httpMethod.toUpperCase(), url, keys, additionalParams).build();
   }
 
   /**

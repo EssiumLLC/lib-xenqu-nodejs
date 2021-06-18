@@ -14,6 +14,10 @@ import XenquApiError from "./Helpers/XenquApiError";
  *  /api/boot
  */
 export const XenquAPIBoot = (baseUrl: string, appId: string, siteProfile: string): Promise<any> => {
+  // @ts-ignore
+  let fetch = fetch;
+  if (typeof window === 'undefined') fetch = require('node-fetch')
+
   return fetch(baseUrl + '/boot', {
     method: "POST",
     mode: 'cors',
@@ -203,13 +207,14 @@ export default class XenquAPI {
    * @param clientId Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
    * @param clientSecret Typically, the /authenticate and /authorize oauth routes are protected under a different client key and secret.
    * @param callback Callback URL to your application (this doesn't really matter, as none of the callbacks are needed in this process)
+   * @param authCallback Callback URL to your application (sometimes different from 'callback')
    * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
    * @param additionalParameters Additional parameters needed for the signin
    */
-  public attemptAuthWithUNandPWorSSO(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<OAuth1Credentials> {
+  public attemptAuthWithUNandPWorSSO(clientId: string, clientSecret: string, callback: string, authCallback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<OAuth1Credentials> {
     this.isInit = false;
     if (this.useWebFlowAuthentication) {
-      return this.base.authenticateWithSSOorUNandPW(clientId, clientSecret, callback, authenticator, additionalParameters).then((success: boolean) => {
+      return this.base.authenticateWithSSOorUNandPW(clientId, clientSecret, callback, authCallback, authenticator, additionalParameters).then((success: boolean) => {
         this.updateRoutes();
         this.isInit = true;
         return this.base.getOAuth1Credentials();
