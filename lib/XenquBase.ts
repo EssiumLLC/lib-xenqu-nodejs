@@ -1,13 +1,10 @@
 import OAuth2Token from "./Models/OAuth2Token";
 import * as jwt from "jsonwebtoken";
+import fetch from 'cross-fetch';
 import WebTokenAuth from "./Models/WebTokenAuth";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
 import XenquApiError from "./Helpers/XenquApiError";
 import SimplerOAuth1 from "simpler-oauth1.0";
-
-// @ts-ignore
-let fetch = fetch; // Use node-fetch if we're not in the browser
-if (typeof window === 'undefined') fetch = require('node-fetch')
 
 /*
 Base for making HTTP requests
@@ -439,7 +436,7 @@ export default class XenquBase {
       token_secret: (signPersonally) ? this.webOauth.secret : undefined,
       verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
     }
-    return new SimplerOAuth1(httpMethod.toUpperCase(), url, keys, additionalParams).build();
+    return new SimplerOAuth1(url, httpMethod.toUpperCase(), keys, additionalParams).build();
   }
 
   /**
