@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 import WebTokenAuth from "./Models/WebTokenAuth";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
 import XenquApiError from "./Helpers/XenquApiError";
-import SimplerOAuth1 from "simpler-oauth1.0";
+const SimpleOAuth = require("./Helpers/simple-oauth");
 
 /*
 Base for making HTTP requests
@@ -215,7 +215,7 @@ export default class XenquBase {
    */
   requestToken(callback: string): Promise<any> {
     const url = this.baseUrl + '/oauth/request_token'
-    const oauth = this.getOath1HeadersWebAuth('POST', url, false, callback);
+    const oauth = this.getOauth1HeadersWebAuth('POST', url, false, callback);
 
     return fetch(url, {
       method: "POST",
@@ -241,7 +241,7 @@ export default class XenquBase {
   accessToken(verifier: string): Promise<boolean> {
     const url = this.baseUrl + '/oauth/access_token'
     this.webOauth.verifier = verifier;
-    const oauth = this.getOath1HeadersWebAuth('POST', url, true);
+    const oauth = this.getOauth1HeadersWebAuth('POST', url, true);
 
     return fetch(url, {
       method: "POST",
@@ -297,7 +297,7 @@ export default class XenquBase {
   authenticate(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<string> {
     const url = this.baseUrl + '/oauth/authenticate'
     const toSign = {...additionalParameters, temp_token: this.webOauth.token, authenticator: authenticator} as any;
-    const oauth = this.getOath1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
+    const oauth = this.getOauth1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
     let formData = ''
     for (const key in toSign) if(toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
     formData = formData.substr(1); // remove leading &
@@ -326,7 +326,7 @@ export default class XenquBase {
   authorize(clientId: string, clientSecret: string, callback: string): Promise<string> {
     const url = this.baseUrl + '/oauth/authorize'
     const toSign = { temp_token: this.webOauth.token } as any;
-    const oauth = this.getOath1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
+    const oauth = this.getOauth1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
     let formData = ''
     for (const key in toSign) if(toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
     formData = formData.substr(1); // remove leading &
@@ -413,7 +413,7 @@ export default class XenquBase {
       token:        (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
       token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret,
     }
-    return new SimplerOAuth1(url, httpMethod.toUpperCase(), keys, additionalParams).build();
+    return new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys).build();
   }
 
   /**
@@ -427,7 +427,7 @@ export default class XenquBase {
    * @param clientSecret Override Client Secret
    * @private
    */
-  private getOath1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: {[key: string]: any}, clientId?: string, clientSecret?: string): string {
+  private getOauth1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: {[key: string]: any}, clientId?: string, clientSecret?: string): string {
     const keys = {
       consumer_key: (clientId) ? clientId : this.clientId,
       consumer_secret: (clientSecret) ? clientSecret : this.clientSecret,
@@ -436,7 +436,8 @@ export default class XenquBase {
       token_secret: (signPersonally) ? this.webOauth.secret : undefined,
       verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
     }
-    return new SimplerOAuth1(url, httpMethod.toUpperCase(), keys, additionalParams).build();
+
+    return new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys).build();
   }
 
   /**
