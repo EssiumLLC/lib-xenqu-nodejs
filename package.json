@@ -1,6 +1,6 @@
 {
   "name": "@essium-llc/lib-xenqu-nodejs",
-  "version": "1.2.2",
+  "version": "1.2.4",
   "description": "A NodeJS Implementation of the Xenqu API",
   "main": "dist/index.js",
   "scripts": {
@@ -33,8 +33,8 @@
   },
   "homepage": "https://github.com/EssiumLLC/lib-xenqu-nodejs#readme",
   "dependencies": {
+    "cross-fetch": "^3.1.4",
     "jsonwebtoken": "^8.5.1",
-    "node-fetch": "^2.6.1",
     "simpler-oauth1.0": "0.0.7",
     "typescript": "^4.1.2"
   },

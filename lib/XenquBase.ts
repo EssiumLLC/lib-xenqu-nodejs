@@ -416,9 +416,7 @@ export default class XenquBase {
       token:        (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
       token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret,
     }
-    const o = new SimplerOAuth1(url, httpMethod.toUpperCase(), keys, additionalParams).build()
-    console.log(o);
-    return o;
+    return new SimplerOAuth1(url, httpMethod.toUpperCase(), keys, additionalParams).build();
   }
 
   /**

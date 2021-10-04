@@ -1,4 +1,5 @@
 import XenquBase from "./XenquBase";
+import fetch from 'cross-fetch';
 import AccountRoutes from "./Routes/AccountRoutes";
 import TrackingRoutes from "./Routes/TrackingRoutes";
 import ReportsRoutes from "./Routes/ReportsRoutes";
@@ -14,9 +15,6 @@ import XenquApiError from "./Helpers/XenquApiError";
  *  /api/boot
  */
 export const XenquAPIBoot = (baseUrl: string, appId: string, siteProfile: string): Promise<any> => {
-  // @ts-ignore
-  let fetch = fetch;
-  if (typeof window === 'undefined') fetch = require('node-fetch')
 
   return fetch(baseUrl + '/boot', {
     method: "POST",
