@@ -1,12 +1,12 @@
 {
   "name": "@essium-llc/lib-xenqu-nodejs",
-  "version": "1.2.7",
+  "version": "1.3.0",
   "description": "A NodeJS Implementation of the Xenqu API",
   "main": "dist/index.js",
   "scripts": {
-    "prepublish": "tsc",
+    "prepublish": "tsc && npm run test",
     "build": "tsc",
-    "dev-run": "tsc && node dist/index.js"
+    "test": "node ./test/test.js"
   },
   "types": "dist/index.d.ts",
   "repository": {
@@ -34,12 +34,13 @@
   "homepage": "https://github.com/EssiumLLC/lib-xenqu-nodejs#readme",
   "dependencies": {
     "cross-fetch": "^3.1.4",
-    "jsonwebtoken": "^8.5.1",
-    "typescript": "^4.1.2",
+    "json-web-token": "^3.2.0",
+    "typescript": "^4.8.4",
     "underscore": "^1.13.1"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",
+    "dotenv": "^16.0.3",
     "es6-promise": "^4.2.8"
   },
   "directories": {

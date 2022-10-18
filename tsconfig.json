@@ -5,6 +5,12 @@
     "declaration": true,
     "allowJs": true,
     "outDir": "./dist",
-    "strict": false
-  }
+    "strict": false,
+    "rootDir": "lib",
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test/**/*"
+  ]
 }

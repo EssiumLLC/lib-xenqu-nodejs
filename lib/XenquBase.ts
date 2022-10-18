@@ -1,10 +1,10 @@
 import OAuth2Token from "./Models/OAuth2Token";
-import * as jwt from "jsonwebtoken";
 import fetch from 'cross-fetch';
 import WebTokenAuth from "./Models/WebTokenAuth";
 import OAuth1Credentials from "./Models/OAuth1Credentials";
 import XenquApiError from "./Helpers/XenquApiError";
-const SimpleOAuth = require("./Helpers/simple-oauth");
+import {signJwt} from "./Helpers/jwt";
+import * as SimpleOAuth from "./Helpers/simple-oauth";
 
 /*
 Base for making HTTP requests
@@ -175,7 +175,7 @@ export default class XenquBase {
   /**
    *  Makes a request with OAuth2.0 Header to get OAuth1.0 headers to use in the rest of the API
    */
-  makeOAuth2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<boolean> {
+  async makeOAuth2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<boolean> {
     this.oauth2RetryVars = {clientId: clientId, clientSecret: clientSecret, subscriber: subscriber, privateKey: privateKey}
     // Base 64 encode  for auth header
     const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
@@ -185,7 +185,7 @@ export default class XenquBase {
       aud: "https://xenqu.com",
       sub: subscriber,
     }
-    const token = jwt.sign(payload, privateKey, {algorithm: "RS256"})
+    const token = await signJwt(privateKey, payload);
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': authorization
@@ -436,7 +436,6 @@ export default class XenquBase {
       token_secret: (signPersonally) ? this.webOauth.secret : undefined,
       verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
     }
-
     return new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys).build();
   }
 
