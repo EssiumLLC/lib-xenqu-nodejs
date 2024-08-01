@@ -7,6 +7,10 @@
 npm install @essium-llc/lib-xenqu-nodejs 
 ```   
 ### Usage
+  
+> [!WARNING]  
+> There was a breaking change from v1 to v2 of the client.  The `boot` method is now a static member of the XenquAPI class, accessed through the `.boot` method.
+
 There are 4 ways to initialize your API instance:  
   
 1. Create an API Instance using a Private Key:    
@@ -21,7 +25,7 @@ await API.init(); // Connects to API using OAuth 2.0 to get OAuth 1.0 credential
 ```typescript 
 import XenquAPI from "lib-xenqu-nodejs";
 
-const boot = await XenquAPIBoot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
+const boot = await XenquAPI.boot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
 const API = new XenquAPI(boot._m, boot._s, null, null, 'https://stage.xenqu.com/api', true);  
 const tempToken = await API.startWebAuth('your-callback-url');  
 // Use the tempToken to embed `https://xenqu.com/login.html?oauth_token=${tempToken}`  
@@ -36,7 +40,7 @@ const tokensToSave = await API.finishWebAuth(oauth_verifier); // Save these toke
 ```typescript 
 import XenquAPI from "lib-xenqu-nodejs";
 
-const boot = await XenquAPIBoot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
+const boot = await XenquAPI.boot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
 const API = new XenquAPI(boot._m, boot._s, null, null, 'https://stage.xenqu.com/api', true); 
  
 // Typically, the client ID and client secret are different for the middle requests in
@@ -65,7 +69,7 @@ If you are having issues trying to use the whole auth flow at once, you can debu
 ```typescript
 import XenquAPI from "lib-xenqu-nodejs";
 
-const boot = await XenquAPIBoot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
+const boot = await XenquAPI.boot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
 const API = new XenquAPI(boot._m, boot._s, null, null, 'https://stage.xenqu.com/api', true); 
 
 // See above example for explination of these variables and what they all mean
