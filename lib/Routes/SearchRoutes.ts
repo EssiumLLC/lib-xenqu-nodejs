@@ -1,17 +1,6 @@
-import XenquBase from "../XenquBase";
+import XenquAPI from ".."
 
 export default class SearchRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Perform a quick search
@@ -34,7 +23,7 @@ export default class SearchRoutes {
       tab_id: tabId,
       type: type
     }
-    return this.base.makePost(`/tracking/quick_search/${type}`, JSON.stringify(payload))
+    return XenquAPI.Base.makePost(`/tracking/quick_search/${type}`, JSON.stringify(payload))
   }
 
 }

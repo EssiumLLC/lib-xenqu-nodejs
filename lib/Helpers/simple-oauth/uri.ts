@@ -5,20 +5,20 @@
 *  modules
 */
 
-const Parser = require('./parser');
-const _ = require('underscore');
+import * as Parser from './parser';
+import _ from 'underscore';
 
-var _uri = function (parsed) {
+const _uri = function (parsed) {
 
   _.extend(this, parsed);
 
   this.default_port = '';
   switch (this.scheme) {
 
-    case 'http' :
+    case 'http':
       this.default_port = '80';
       break;
-    case 'https' :
+    case 'https':
       this.default_port = '443';
       break;
 
@@ -41,7 +41,7 @@ _.extend(_uri.prototype, {
   },
 
   build: function () {
-    var str = '';
+    let str = '';
 
     if (this.scheme) {
       str += this.scheme;
@@ -110,14 +110,14 @@ const URI = {
 
   parseQuery: function (query) {
 
-    var elements = (query || "").split('&'),
-      result = {},
-      element;
+    const elements = (query || "").split('&');
+    const result = {};
+    let element;
 
     for (element = elements.shift(); element; element = elements.shift()) {
 
-      var keyToken = element.split('='),
-        value = '';
+      const keyToken = element.split('=');
+      let value = '';
 
       if (keyToken[1]) {
         value = decodeURIComponent(keyToken[1]);
@@ -126,7 +126,7 @@ const URI = {
       if (result[keyToken[0]]) {
 
         if (!(result[keyToken[0]] instanceof Array)) {
-          result[keyToken[0]] = Array(result[keyToken[0]], value);
+          result[keyToken[0]] = [result[keyToken[0]], value];
         } else {
           if (_.isArray(result[keyToken[0]]))
             result[keyToken[0]].push(value);
@@ -156,7 +156,7 @@ const URI = {
   */
 
   parseUri: function (str) {
-    var uri = Parser.parse(str);
+    const uri = Parser.parse(str);
 
     uri['queryKey'] = {};
     uri['query'].replace(/(?:^|&)([^&=]*)=?([^&]*)/g, function ($0, $1, $2) {

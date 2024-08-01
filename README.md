@@ -89,12 +89,12 @@ const tokensToSave = await API.finishWebAuth(verifierSplit); // Save these token
 ```typescript 
 import XenquAPI from "lib-xenqu-nodejs";    
 
-const oldCreds = new new OAuth1Credentials({    
+const oldCreds = {    
 	consumer_key: 'your-consumer-key',    
     consumer_secret: 'your-consumer-secret',    
     token: 'your-token',    
     token_secret: 'your-secret', 
-})  
+}
 
 const API = new XenquAPI(oldCreds.consumerKey, oldCreds.consumerSecret, "private_key", "subscriber", 'https://xenqu.com/api');  
 // OR, If you're using Web-Style authentication  

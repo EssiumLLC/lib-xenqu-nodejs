@@ -1,9 +1,9 @@
 import OAuth2Token from "./Models/OAuth2Token";
 import fetch from 'cross-fetch';
 import WebTokenAuth from "./Models/WebTokenAuth";
-import OAuth1Credentials from "./Models/OAuth1Credentials";
+import { OAuth1Credentials } from "./Models";
 import XenquApiError from "./Helpers/XenquApiError";
-import {signJwt} from "./Helpers/jwt";
+import { signJwt } from "./Helpers/jwt";
 import * as SimpleOAuth from "./Helpers/simple-oauth";
 
 /*
@@ -19,8 +19,8 @@ export default class XenquBase {
   private oauth: OAuth2Token;
   private webOauth: WebTokenAuth;
   private useWebAuth: boolean;
-  private errorCallbacks: {[key: string]: (data?: XenquApiError) => void};
-  private oauth2RetryVars: {clientId: string, clientSecret: string, subscriber: string, privateKey: string};
+  private errorCallbacks: { [key: string]: (data?: XenquApiError) => void };
+  private oauth2RetryVars: { clientId: string, clientSecret: string, subscriber: string, privateKey: string };
 
   constructor(baseUrl: string, clientId?: string, clientSecret?: string, useWebAuth: boolean = false) {
     this.baseUrl = baseUrl;
@@ -48,11 +48,11 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "GET",
-      headers: {'authorization': this.getOAuth1Headers("GET", path, parameters)}
+      headers: { 'authorization': this.getOAuth1Headers("GET", path, parameters) }
     }).then((res: Response) => {
-      if(res.ok) {
+      if (res.ok) {
         return res.json();
-      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+      } else if (res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
         return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
           return this.makeGetRecursive(path, parameters, retries + 1);
         })
@@ -81,12 +81,12 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "POST",
-      headers: {'authorization': this.getOAuth1Headers("POST", path, parameters), "Content-Type": 'application/json'},
+      headers: { 'authorization': this.getOAuth1Headers("POST", path, parameters), "Content-Type": 'application/json' },
       body: payload,
     }).then((res: Response) => {
       if (res.ok) {
         return res.json()
-      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+      } else if (res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
         return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
           return this.makePostRecursive(path, payload, parameters, retries + 1);
         })
@@ -94,7 +94,7 @@ export default class XenquBase {
         throw res;
       }
     }).then((json) => {
-      if(Array.isArray(json.data)) {
+      if (Array.isArray(json.data)) {
         return json.data;
       } else {
         return json;
@@ -121,12 +121,12 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "PUT",
-      headers: {'authorization': this.getOAuth1Headers("PUT", path, parameters), "Content-Type": 'application/json'},
+      headers: { 'authorization': this.getOAuth1Headers("PUT", path, parameters), "Content-Type": 'application/json' },
       body: payload,
     }).then((res: Response) => {
       if (res.ok) {
         return res.json();
-      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+      } else if (res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
         return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
           return this.makePutRecursive(path, payload, parameters, retries + 1);
         })
@@ -155,12 +155,12 @@ export default class XenquBase {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "DELETE",
-      headers: {'authorization': this.getOAuth1Headers("DELETE", path, parameters), "Content-Type": 'application/json'},
+      headers: { 'authorization': this.getOAuth1Headers("DELETE", path, parameters), "Content-Type": 'application/json' },
       body: payload,
     }).then((res: Response) => {
       if (res.ok) {
         return res.json();
-      } else if(res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
+      } else if (res.status === 401 && retries < 1 && !this.useWebAuth) { // if we get 401, automatically retry auth
         return this.makeOAuth2Request(this.oauth2RetryVars.clientId, this.oauth2RetryVars.clientSecret, this.oauth2RetryVars.subscriber, this.oauth2RetryVars.privateKey).then(() => {
           return this.makeDeleteRecursive(path, payload, parameters, retries + 1);
         })
@@ -176,7 +176,7 @@ export default class XenquBase {
    *  Makes a request with OAuth2.0 Header to get OAuth1.0 headers to use in the rest of the API
    */
   async makeOAuth2Request(clientId: string, clientSecret: string, subscriber: string, privateKey: string): Promise<boolean> {
-    this.oauth2RetryVars = {clientId: clientId, clientSecret: clientSecret, subscriber: subscriber, privateKey: privateKey}
+    this.oauth2RetryVars = { clientId: clientId, clientSecret: clientSecret, subscriber: subscriber, privateKey: privateKey }
     // Base 64 encode  for auth header
     const authorization = 'Basic ' + Buffer.from(this.clientId + ':' + this.clientSecret).toString('base64');
     const payload = {
@@ -220,7 +220,7 @@ export default class XenquBase {
     return fetch(url, {
       method: "POST",
       mode: 'cors',
-      headers: {'Authorization': oauth}
+      headers: { 'Authorization': oauth }
     }).then((res: Response) => {
       if (res.ok) {
         return res.text();
@@ -266,7 +266,7 @@ export default class XenquBase {
    */
   refreshToken(): Promise<boolean> {
     const url = this.baseUrl + '/oauth/renew_token'
-    const oauth = this.getOAuth1Headers('POST', url);
+    const oauth = this.useWebAuth ? this.getOauth1HeadersWebAuth("POST", url, true) : this.getOAuth1Headers('POST', url);
 
     return fetch(url, {
       method: "POST",
@@ -294,12 +294,12 @@ export default class XenquBase {
    * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
    * @param additionalParameters Additional parameters needed for the signin
    */
-  authenticate(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<string> {
+  authenticate(clientId: string, clientSecret: string, callback: string, authenticator: 'default' | 'openid', additionalParameters: { user_name?: string, user_pass?: string, provider?: string, id_token?: string }): Promise<string> {
     const url = this.baseUrl + '/oauth/authenticate'
-    const toSign = {...additionalParameters, temp_token: this.webOauth.token, authenticator: authenticator} as any;
+    const toSign = { ...additionalParameters, temp_token: this.webOauth.token, authenticator: authenticator } as any;
     const oauth = this.getOauth1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
     let formData = ''
-    for (const key in toSign) if(toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
+    for (const key in toSign) if (toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
     formData = formData.substr(1); // remove leading &
 
     return fetch(url, {
@@ -328,7 +328,7 @@ export default class XenquBase {
     const toSign = { temp_token: this.webOauth.token } as any;
     const oauth = this.getOauth1HeadersWebAuth('POST', url, false, callback, toSign, clientId, clientSecret);
     let formData = ''
-    for (const key in toSign) if(toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
+    for (const key in toSign) if (toSign.hasOwnProperty(key)) formData += `&${key}=${toSign[key]}`
     formData = formData.substr(1); // remove leading &
 
     return fetch(url, {
@@ -358,7 +358,7 @@ export default class XenquBase {
    * @param authenticator Authentication method 'default for username/password, 'openid' for SSO applications
    * @param additionalParameters Additional parameters needed for the signin
    */
-  authenticateWithSSOorUNandPW(clientId: string, clientSecret: string, callback: string, authCallback: string, authenticator: 'default' | 'openid', additionalParameters: {user_name?: string, user_pass?: string, provider?: string, id_token?: string}): Promise<boolean> {
+  authenticateWithSSOorUNandPW(clientId: string, clientSecret: string, callback: string, authCallback: string, authenticator: 'default' | 'openid', additionalParameters: { user_name?: string, user_pass?: string, provider?: string, id_token?: string }): Promise<boolean> {
     return this.requestToken(callback).then(() => {
       return this.authenticate(clientId, clientSecret, authCallback, authenticator, additionalParameters);
     }).then(() => {
@@ -372,13 +372,12 @@ export default class XenquBase {
    * Get OAuth1.0 Credentials
    */
   getOAuth1Credentials(): OAuth1Credentials {
-    const creds = {
+    return {
       consumer_key: this.clientId,
       consumer_secret: this.clientSecret,
       token: (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
       token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret
-    }
-    return new OAuth1Credentials(creds);
+    };
   }
 
   /**
@@ -386,14 +385,14 @@ export default class XenquBase {
    * @param credentials Credentials to set
    */
   setOAuth1Credentials(credentials: OAuth1Credentials) {
-    this.clientId = credentials.consumerKey;
-    this.clientSecret = credentials.consumerSecret;
+    this.clientId = credentials.consumer_key;
+    this.clientSecret = credentials.consumer_secret;
     if (!this.useWebAuth) {
       this.oauth.token = credentials.token;
-      this.oauth.secret = credentials.secret;
+      this.oauth.secret = credentials.token_secret;
     } else {
       this.webOauth.token = credentials.token;
-      this.webOauth.secret = credentials.secret;
+      this.webOauth.secret = credentials.token_secret;
       this.webOauth.verifier = '';
     }
   }
@@ -405,14 +404,15 @@ export default class XenquBase {
    * @param additionalParams Any query parameters used in the
    * @private
    */
-  private getOAuth1Headers(httpMethod: string, path: string, additionalParams?: {[key: string]: any} ): string {
+  private getOAuth1Headers(httpMethod: string, path: string, additionalParams?: { [key: string]: any }): string {
     const url = this.baseUrl + path;
     const keys = {
       consumer_key: this.clientId,
       consumer_secret: this.clientSecret,
-      token:        (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
+      token: (!this.useWebAuth) ? this.oauth.token : this.webOauth.token,
       token_secret: (!this.useWebAuth) ? this.oauth.secret : this.webOauth.secret,
     }
+
     return new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys).build();
   }
 
@@ -427,15 +427,16 @@ export default class XenquBase {
    * @param clientSecret Override Client Secret
    * @private
    */
-  private getOauth1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: {[key: string]: any}, clientId?: string, clientSecret?: string): string {
+  private getOauth1HeadersWebAuth(httpMethod: string, url: string, signPersonally: boolean, callback?: string, additionalParams?: { [key: string]: any }, clientId?: string, clientSecret?: string): string {
     const keys = {
       consumer_key: (clientId) ? clientId : this.clientId,
       consumer_secret: (clientSecret) ? clientSecret : this.clientSecret,
       callback: callback,
-      token:        (signPersonally) ? this.webOauth.token : undefined,
+      token: (signPersonally) ? this.webOauth.token : undefined,
       token_secret: (signPersonally) ? this.webOauth.secret : undefined,
-      verifier:     (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
+      verifier: (signPersonally && this.webOauth.verifier !== '') ? this.webOauth.verifier : undefined
     }
+
     return new SimpleOAuth.Header(httpMethod.toUpperCase(), url, additionalParams, keys).build();
   }
 
@@ -445,9 +446,9 @@ export default class XenquBase {
    * @param callback Callback function
    * @private
    */
-  registerErrorHandler(id: string, callback: (data?: XenquApiError) => void): {id: string} {
+  registerErrorHandler(id: string, callback: (data?: XenquApiError) => void): { id: string } {
     this.errorCallbacks[id] = callback;
-    return {id: id};
+    return { id: id };
   }
 
   /**
@@ -455,9 +456,9 @@ export default class XenquBase {
    * @param id Error Handler Identifier
    * @private
    */
-  unregisterErrorHandler(id: string): {id: string} {
+  unregisterErrorHandler(id: string): { id: string } {
     this.errorCallbacks[id] = undefined;
-    return {id: id};
+    return { id: id };
   }
 
   /**
@@ -467,7 +468,11 @@ export default class XenquBase {
    */
   private executeAllErrorHandlers(error: XenquApiError) {
     Object.keys(this.errorCallbacks).forEach((key: string) => {
-      this.errorCallbacks[key](error);
+      try {
+        this.errorCallbacks[key](error);
+      } catch (e) {
+        console.error("Error Handler Failed: ", e);
+      }
     })
   }
 

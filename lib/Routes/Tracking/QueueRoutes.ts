@@ -1,18 +1,7 @@
-import XenquBase from "../../XenquBase";
+import XenquAPI from "../..";
 import {Queue} from "../../Models/Queue";
 
 export default class QueueRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Get the latest values for a queue including all its items.
@@ -21,7 +10,7 @@ export default class QueueRoutes {
    * @param queueId Queue ID to get
    */
   getQueue(groupId: string, queueId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/queues/${queueId}`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/queues/${queueId}`)
   }
 
   /**
@@ -31,7 +20,7 @@ export default class QueueRoutes {
    * @param queue Queue to add
    */
   addQueue(groupId: string, queue: Queue) {
-    return this.base.makePost(`/tracking/groups/${groupId}/queues`, JSON.stringify(queue.toJson()))
+    return XenquAPI.Base.makePost(`/tracking/groups/${groupId}/queues`, JSON.stringify(queue.toJson()))
   }
 
   /**
@@ -42,7 +31,7 @@ export default class QueueRoutes {
    * @param queue Queue to add
    */
   editQueue(groupId: string, queueId: string, queue: Queue) {
-    return this.base.makePut(`/tracking/groups/${groupId}/queues/${queueId}`, JSON.stringify(queue.toJson()))
+    return XenquAPI.Base.makePut(`/tracking/groups/${groupId}/queues/${queueId}`, JSON.stringify(queue.toJson()))
   }
 
   /**
@@ -52,7 +41,7 @@ export default class QueueRoutes {
    * @param queueId Queue ID to delete
    */
   deleteQueue(groupId: string, queueId: string) {
-    return this.base.makeDelete(`/tracking/groups/${groupId}/queues/${queueId}`)
+    return XenquAPI.Base.makeDelete(`/tracking/groups/${groupId}/queues/${queueId}`)
   }
 
 }

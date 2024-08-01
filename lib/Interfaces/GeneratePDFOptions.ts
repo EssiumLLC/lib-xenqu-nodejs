@@ -1,4 +1,4 @@
-export default interface GeneratePDFOptions {
+export interface GeneratePDFOptions {
     add_redacted?: any[]
     attachment_page?: boolean
     can_history?: boolean

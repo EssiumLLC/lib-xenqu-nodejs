@@ -1,18 +1,7 @@
-import XenquBase from "../XenquBase";
-import GeneratePDFOptions from "../Interfaces/GeneratePDFOptions";
+import XenquAPI from "..";
+import { GeneratePDFOptions } from "../Interfaces";
 
 export default class FormsRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Get form instance data tied to an item on a record
@@ -20,7 +9,7 @@ export default class FormsRoutes {
    * @param instanceId Form Instance ID to get
    */
   public getInstance(instanceId: string): Promise<any> {
-    return this.base.makeGet('/jform/instance/' + instanceId);
+    return XenquAPI.Base.makeGet('/jform/instance/' + instanceId);
   }
 
   /**
@@ -31,10 +20,10 @@ export default class FormsRoutes {
    * @param override It's in the API Docs. Not really explained. Defaults to true
    */
   public lockForm(instanceId: string, lock: boolean, override: boolean = true): Promise<any> {
-    let payload = { };
-    if(lock) payload = { lock: lock, override: override };
-    if(!lock) payload = { unlock: !lock, override: override };
-    return this.base.makePut('/jform/instance/' + instanceId, JSON.stringify(payload));
+    let payload = {};
+    if (lock) payload = { lock: lock, override: override };
+    if (!lock) payload = { unlock: !lock, override: override };
+    return XenquAPI.Base.makePut('/jform/instance/' + instanceId, JSON.stringify(payload));
   }
 
   /**
@@ -45,8 +34,8 @@ export default class FormsRoutes {
    * @param stateId Field ID to get field from
    * @param field Field data to update
    */
-  public updateField(instanceId: string, pageId: string, stateId: string, field: {raw_value: string, fid: string}): Promise<any> {
-    return this.base.makePut(`/jform/instance/${instanceId}/page/${pageId}/field/${stateId}`, JSON.stringify(field));
+  public updateField(instanceId: string, pageId: string, stateId: string, field: { raw_value: string, fid: string }): Promise<any> {
+    return XenquAPI.Base.makePut(`/jform/instance/${instanceId}/page/${pageId}/field/${stateId}`, JSON.stringify(field));
   }
 
   /**
@@ -60,7 +49,7 @@ export default class FormsRoutes {
    */
   public generatePDF(instanceId: string, pdfProperties: GeneratePDFOptions): Promise<any> {
     // The slash at the end is IMPORTANT!
-    return this.base.makePost(`/jform/instance/${instanceId}/pdf/`, JSON.stringify(pdfProperties));
+    return XenquAPI.Base.makePost(`/jform/instance/${instanceId}/pdf/`, JSON.stringify(pdfProperties));
   }
 
   /**
@@ -71,7 +60,7 @@ export default class FormsRoutes {
    * @param fileId File ID to get
    */
   public getFile(instanceId: string, fileId: string): Promise<any> {
-    return this.base.makeGet(`/jform/instance/${instanceId}/file/${fileId}`);
+    return XenquAPI.Base.makeGet(`/jform/instance/${instanceId}/file/${fileId}`);
   }
 
 }

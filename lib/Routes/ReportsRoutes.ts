@@ -1,17 +1,6 @@
-import XenquBase from "../XenquBase";
+import XenquAPI from "..";
 
 export default class ReportsRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Get Report Results
@@ -24,7 +13,7 @@ export default class ReportsRoutes {
    */
   public getReportResults(jobId: string, count: number = 1, sortBy: string = "run_date:asc", status: number = 3, offset: number = 0): Promise<any> {
     const params = {job_id: jobId, status: status, count: count, offset: offset, sortby: sortBy}
-    return this.base.makeGet(`/reporting/results`, params);
+    return XenquAPI.Base.makeGet(`/reporting/results`, params);
   }
 
   /**
@@ -33,7 +22,7 @@ export default class ReportsRoutes {
    * @param reportId Report ID to get results of
    */
   public getReportResult(reportId: string): Promise<any[]> {
-    return this.base.makeGet(`/reporting/results/${reportId}`);
+    return XenquAPI.Base.makeGet(`/reporting/results/${reportId}`);
   }
 
 }

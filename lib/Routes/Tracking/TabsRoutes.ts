@@ -1,17 +1,6 @@
-import XenquBase from "../../XenquBase";
+import XenquAPI from "../..";
 
 export default class TabsRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Retrieve all contacts the current user can access within the scope of their tab membership, contact ownership, and task assignments
@@ -23,7 +12,7 @@ export default class TabsRoutes {
    */
   getContacts(term: string, scope: "display_name" | "primary_email" | "primary_phone" | "org_name" | "title" | "tags" | string, count: number = 10, offset: number = 0) {
     const params = { term: term, scope: scope, count: count, offset: offset}
-    return this.base.makeGet(`/tracking/contacts`, params)
+    return XenquAPI.Base.makeGet(`/tracking/contacts`, params)
   }
 
   /**
@@ -31,7 +20,7 @@ export default class TabsRoutes {
    * @see [API Docs]{@link https://apidocs.xenqu.com/#764d0965-219e-41a0-b0cc-5896c39012c8}
    */
   getTabs() {
-    return this.base.makeGet(`/tracking/groups`)
+    return XenquAPI.Base.makeGet(`/tracking/groups`)
   }
 
   /**
@@ -40,7 +29,7 @@ export default class TabsRoutes {
    * @param groupId Tab ID to get items from
    */
   getItems(groupId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/list/items`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/list/items`)
   }
 
   /**
@@ -49,7 +38,7 @@ export default class TabsRoutes {
    * @param groupId Tab ID to get templates from
    */
   getTemplates(groupId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/queue_templates`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/queue_templates`)
   }
 
   /**
@@ -59,7 +48,7 @@ export default class TabsRoutes {
    * @param templateId Template ID to get
    */
   getTemplate(groupId: string, templateId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/queue_templates/${templateId}`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/queue_templates/${templateId}`)
   }
 
   /**
@@ -68,7 +57,7 @@ export default class TabsRoutes {
    * @param groupId Tab ID to get libraries from
    */
   getLibraries(groupId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/libraries`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/libraries`)
   }
 
   /**
@@ -78,7 +67,7 @@ export default class TabsRoutes {
    * @param query Search Query
    */
   searchLibraries(groupId: string, query: string) {
-    return this.base.makePost(`/tracking/groups/${groupId}/libraries`, JSON.stringify({title: query}))
+    return XenquAPI.Base.makePost(`/tracking/groups/${groupId}/libraries`, JSON.stringify({title: query}))
   }
 
   /**
@@ -88,7 +77,7 @@ export default class TabsRoutes {
    * @param contactId Contact ID of user
    */
   getContactLog(groupId: string, contactId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/contact_log/${contactId}`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/contact_log/${contactId}`)
   }
 
 }

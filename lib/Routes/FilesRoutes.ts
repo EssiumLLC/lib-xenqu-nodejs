@@ -1,25 +1,15 @@
-import XenquBase from "../XenquBase";
+import XenquAPI from "..";
+import { FileData } from "../Models/File";
 
 export default class FilesRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Download File
    * @see [API Docs]{@link https://apidocs.xenqu.com/#2102ba3f-8a86-4f02-aeb2-3cdfbda3eadc}
    * @param fileId File ID to download
    */
-  public downloadFile(fileId: string): Promise<any> {
-    return this.base.makeGet('/files/' + fileId, {out: 'json'});
+  public downloadFile(fileId: string): Promise<FileData> {
+    return XenquAPI.Base.makeGet('/files/' + fileId, {out: 'json'});
   }
 
   /**
@@ -48,7 +38,7 @@ export default class FilesRoutes {
         "totalSize": fileData.length,
         "totalChunks": Math.ceil(fileData.length / chunkLimit) // Calc max number of chunks that we'll need
       }
-      promises.push(this.base.makePost("/files", JSON.stringify(data)))
+      promises.push(XenquAPI.Base.makePost("/files", JSON.stringify(data)))
     }
     // Execute all POST requests
     return Promise.all(promises);

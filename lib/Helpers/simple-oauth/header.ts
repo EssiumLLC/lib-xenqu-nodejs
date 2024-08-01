@@ -1,9 +1,9 @@
-import {URI, _uri} from "./uri";
-import {b64_hmac_sha1} from "./sign";
-const _ = require("underscore")
+import { URI, _uri } from "./uri";
+import b64_hmac_sha1 from "./sign";
+import _ from "underscore"
 
-var ATTRIBUTE_KEYS = ['callback', 'consumer_key', 'nonce', 'signature_method', 'timestamp', 'token', 'verifier', 'version'];
-var NONCE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const ATTRIBUTE_KEYS = ['callback', 'consumer_key', 'nonce', 'signature_method', 'timestamp', 'token', 'verifier', 'version'];
+const NONCE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /* getNonce adapted from OAuthSimple
   * A simpler version of OAuth
@@ -18,17 +18,15 @@ var NONCE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxy
   *
  */
 
-function getNonce(length?) {
+function getNonce(length = 16) {
+  const len = NONCE_CHARS.length;
+  let result = '',
+    i = 0,
+    rnum;
 
-  var length = length || 16,
-    result = '',
-    i=0,
-    rnum,
-    len = NONCE_CHARS.length;
-
-  for ( ;i<length;i++ ) {
+  for (; i < length; i++) {
     rnum = Math.floor(Math.random() * len);
-    result += NONCE_CHARS.substring(rnum, rnum+1);
+    result += NONCE_CHARS.substring(rnum, rnum + 1);
   }
 
   return result;
@@ -36,13 +34,12 @@ function getNonce(length?) {
 }
 
 function getTimestamp() {
-  var d = new Date();
+  const d = new Date();
 
-  return ''+Math.floor(d.getTime() / 1000);
+  return '' + Math.floor(d.getTime() / 1000);
 }
 
-var Header: any = function(method, url, params, oauth) {
-  var oauth = oauth || {};
+const Header = function (method, url, params, oauth = {}) {
 
   this.method = method.toUpperCase();
 
@@ -76,7 +73,7 @@ Header.default_options = function () {
 *            unreserved = ALPHA, DIGIT, '-', '.', '_', '~'
 */
 
-Header.escape = function(value) {
+Header.escape = function (value) {
   return encodeURIComponent(value)
     .replace(/\!/g, "%21")
     .replace(/\*/g, "%2A")
@@ -85,7 +82,7 @@ Header.escape = function(value) {
     .replace(/\)/g, "%29");
 }
 
-Header.unescape = function(value) {
+Header.unescape = function (value) {
   return decodeURIComponent(value);
 }
 
@@ -121,7 +118,7 @@ _.extend(Header.prototype, {
 
   url: function () {
 
-    var uri = new _uri(_.clone(this.uri));
+    const uri = new _uri(_.clone(this.uri));
     uri.query = null;
     return uri.build();
 
@@ -155,54 +152,53 @@ _.extend(Header.prototype, {
   *
   */
 
-  build: function ( output ) {
-    var output = output || 'header',
-      s;
+  build: function (output = 'header') {
+    let s;
 
-    if ( output == 'header' )
+    if (output == 'header')
       s = 'OAuth ' + this.normalized_header_attributes();
-    else if ( output == 'query' )
+    else if (output == 'query')
       s = this.normalized_query_attributes();
 
     return s;
   },
 
   signed_attributes: function () {
-    var attr = _.clone(this.attributes());
+    const attr = _.clone(this.attributes());
     attr['oauth_signature'] = this.signature();
     return attr;
   },
 
   // private
 
-  normalized_header_attributes: function ( ) {
+  normalized_header_attributes: function () {
 
     return (
       _.map(
-        _.sortBy( _.pairs(this.signed_attributes()), function (v) { return v[0]; } ),
+        _.sortBy(_.pairs(this.signed_attributes()), function (v) { return v[0]; }),
         function (v) {
-          return v[0]+'="'+Header.escape(v[1])+'"';
+          return v[0] + '="' + Header.escape(v[1]) + '"';
         }).join(', ')
     );
   },
 
-  normalized_query_attributes: function ( ) {
+  normalized_query_attributes: function () {
 
     return (
       _.map(
-        _.sortBy( _.pairs(this.signed_attributes()), function (v) { return v[0]; } ),
+        _.sortBy(_.pairs(this.signed_attributes()), function (v) { return v[0]; }),
         function (v) {
-          return v[0]+'='+Header.escape(v[1]);
+          return v[0] + '=' + Header.escape(v[1]);
         }).join('&')
     );
   },
 
-  attributes: function() {
-    var attr = {},
+  attributes: function () {
+    const attr = {},
       opt = this.options;
 
     _.each(ATTRIBUTE_KEYS, function (k) {
-      if (opt[k]) attr['oauth_'+k] = opt[k];
+      if (opt[k]) attr['oauth_' + k] = opt[k];
     });
 
     return attr;
@@ -247,7 +243,7 @@ _.extend(Header.prototype, {
   */
 
   secret: function () {
-    var opt = _.pick(this.options, 'consumer_secret', 'token_secret');
+    const opt = _.pick(this.options, 'consumer_secret', 'token_secret');
 
     opt['consumer_secret'] = opt['consumer_secret'] || '';
     opt['token_secret'] = opt['token_secret'] || '';
@@ -316,14 +312,14 @@ _.extend(Header.prototype, {
   },
 
   url_params: function () {
-    var params = [];
+    const params = [];
 
-    _.each(URI.parseQuery(this.uri.query || ''), function(vs, k) {
-      params.push( _(_.flatten([vs]).sort()).chain().map(function (v) { return [k, v]; }).value() );
+    _.each(URI.parseQuery(this.uri.query || ''), function (vs, k) {
+      params.push(_(_.flatten([vs]).sort()).chain().map(function (v) { return [k, v]; }).value());
     });
 
-    // @ts-ignore
-    return ( params.flatten ? params.flatten(true) : _.flatten(params, true) );
+    // @ts-expect-error because this is legacy code and legacy code sucks.
+    return (params.flatten ? params.flatten(true) : _.flatten(params, true));
   }
 
 });

@@ -1,18 +1,7 @@
-import XenquBase from "../../XenquBase";
+import XenquAPI from "../..";
 import TrackingItem from "../../Models/TrackingItem";
 
 export default class ItemsRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Get list of items for current user. This data is the same as seen under the "My Queue" menu in the UI. queued now complete
@@ -25,7 +14,7 @@ export default class ItemsRoutes {
    */
   getAssignedItemList(queued: "now"| "complete", sortCol: "relevance"|"create_date"|"last_log_date"|"schedule_date"|"priority"|"item_title", sortAscending: boolean = true, offset: number = 0, count: number = 20) {
     const sort = sortCol + ((!sortAscending)? ',desc' : '');
-    return this.base.makeGet(`/tracking/user/items?queued=${queued}&sortby=${sort}&offset=${offset}&count=${count}`)
+    return XenquAPI.Base.makeGet(`/tracking/user/items?queued=${queued}&sortby=${sort}&offset=${offset}&count=${count}`)
   }
 
   /**
@@ -34,7 +23,7 @@ export default class ItemsRoutes {
    * @param trackingId Tracking ID to get details from
    */
   getAssignedItemDetail(trackingId: string) {
-    return this.base.makeGet(`/tracking/user/items/${trackingId}`)
+    return XenquAPI.Base.makeGet(`/tracking/user/items/${trackingId}`)
   }
 
   /**
@@ -45,7 +34,7 @@ export default class ItemsRoutes {
    * @param queueId Queue ID to get tracking item from
    */
   getTrackingItem(trackingId: string, groupId: string, queueId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}`)
   }
 
   /**
@@ -58,7 +47,7 @@ export default class ItemsRoutes {
    * @param ignoreTimezones Ignore UTC Timezone offset when translating dates to YYYY-MM-DD. Defaults to false
    */
   updateTrackingItem(trackingId: string, groupId: string, queueId: string, trackingItem: TrackingItem, ignoreTimezones: boolean = false) {
-    return this.base.makePut(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}`, JSON.stringify(trackingItem.toJson(false)))
+    return XenquAPI.Base.makePut(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}`, JSON.stringify(trackingItem.toJson(false)))
   }
 
   /**
@@ -69,7 +58,7 @@ export default class ItemsRoutes {
    * @param message Message to post
    */
   addMessage(trackingId: string, message: string) {
-    return this.base.makePost(`/tracking/items/${trackingId}/logs`, JSON.stringify({event_data:{message_text: message}}))
+    return XenquAPI.Base.makePost(`/tracking/items/${trackingId}/logs`, JSON.stringify({event_data:{message_text: message}}))
   }
 
   /**
@@ -81,7 +70,7 @@ export default class ItemsRoutes {
    * @param url Callback URL to add
    */
   setCallback(trackingId: string, groupId: string, queueId: string, url: string) {
-    return this.base.makePut(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}/callback`, JSON.stringify({callback_url: url}))
+    return XenquAPI.Base.makePut(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}/callback`, JSON.stringify({callback_url: url}))
   }
 
   /**
@@ -93,7 +82,7 @@ export default class ItemsRoutes {
    * @param url Callback URL to remove
    */
   removeCallback(trackingId: string, groupId: string, queueId: string, url: string) {
-    return this.base.makeDelete(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}/callback`, JSON.stringify({callback_url: url}))
+    return XenquAPI.Base.makeDelete(`/tracking/groups/${groupId}/queues/${queueId}/items/${trackingId}/callback`, JSON.stringify({callback_url: url}))
   }
 
   /**
@@ -104,7 +93,7 @@ export default class ItemsRoutes {
    * @param offset Offset to access by. Results are always pagenated. Defaults to 0
    */
   getActivityStream(groupId: string, count: number = 5, offset: number = 0) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/items/activity?count=${count}&offset=${offset}`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/items/activity?count=${count}&offset=${offset}`)
   }
 
   /**
@@ -113,7 +102,7 @@ export default class ItemsRoutes {
    * @param trackingId Tracking ID to get attachments from
    */
   getAttachments(trackingId: string) {
-    return this.base.makeGet(`/tracking/attachments/${trackingId}`)
+    return XenquAPI.Base.makeGet(`/tracking/attachments/${trackingId}`)
   }
 
   /**
@@ -123,7 +112,7 @@ export default class ItemsRoutes {
    * @param fileId File ID to get
    */
   getDownload(attachmentId: string, fileId: string) {
-    return this.base.makeGet(`/tracking/attachments/${attachmentId}/files/${fileId}`)
+    return XenquAPI.Base.makeGet(`/tracking/attachments/${attachmentId}/files/${fileId}`)
   }
 
   /**
@@ -133,7 +122,7 @@ export default class ItemsRoutes {
    * @param data File Data from Files API
    */
   addAttachment(attachmentId: string, data: {filename: string, _temp_handle_id: string, tracking_id: number, content_type: string}) {
-    return this.base.makePost(`/tracking/attachments/${attachmentId}/files`, JSON.stringify(data))
+    return XenquAPI.Base.makePost(`/tracking/attachments/${attachmentId}/files`, JSON.stringify(data))
   }
 
   /**
@@ -143,7 +132,7 @@ export default class ItemsRoutes {
    * @param data File Data from Files API
    */
   updateAttachment(attachmentId: string, data: {tracking_id: number, filename: string, _temp_handle_id: string}) {
-    return this.base.makePut(`/tracking/attachments/${attachmentId}/files`, JSON.stringify(data))
+    return XenquAPI.Base.makePut(`/tracking/attachments/${attachmentId}/files`, JSON.stringify(data))
   }
 
   /**
@@ -153,7 +142,7 @@ export default class ItemsRoutes {
    * @param fileId File ID to remove
    */
   deleteAttachment(attachmentId: string, fileId: string) {
-    return this.base.makeDelete(`/tracking/attachments/${attachmentId}/files/${fileId}`);
+    return XenquAPI.Base.makeDelete(`/tracking/attachments/${attachmentId}/files/${fileId}`);
   }
 
   /**
@@ -162,7 +151,7 @@ export default class ItemsRoutes {
    * @param ruleRoute Rule Route to run. Ex: /run_rules/remove/<template_id> would be passed as ['remove', '<template_id>']
    */
   runRulesOnAttachment(itemId: string, ruleRoute: string[]) {
-    return this.base.makeGet(`/tracking/attachments/${itemId}/run_rules/${ruleRoute.join('/')}`);
+    return XenquAPI.Base.makeGet(`/tracking/attachments/${itemId}/run_rules/${ruleRoute.join('/')}`);
   }
 
 }

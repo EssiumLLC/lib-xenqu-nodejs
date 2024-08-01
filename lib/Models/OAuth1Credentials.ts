@@ -1,58 +1,12 @@
-export default class OAuth1Credentials {
-  private _consumerKey: string;
-  private _consumerSecret: string;
-  private _token: string;
-  private _secret: string;
+import { z } from "zod";
 
-  /**
-   * Optionally initialize this model with JSON data
-   * @param json
-   */
-  constructor(json?: any) {
-    this._consumerKey = '';
-    this._consumerSecret = '';
-    this._token = '';
-    this._secret = '';
-    if(json) this.fromJson(json)
-  }
+const OAuth1CredentialsSchema = z.object({
+  consumer_key: z.string(),
+  consumer_secret: z.string(),
+  token: z.string(),
+  token_secret: z.string(),
+});
 
-  fromJson(json: any) {
-    this._consumerKey = json.consumer_key;
-    this._consumerSecret = json.consumer_secret;
-    this._token = json.token;
-    this._secret = json.token_secret;
-  }
+type OAuth1Credentials = z.infer<typeof OAuth1CredentialsSchema>;
 
-  toJson(): any {
-    return {
-      consumer_key: this.consumerKey,
-      consumer_secret: this.consumerSecret,
-      token: this.token,
-      token_secret: this.secret,
-    }
-  }
-
-  get consumerKey(): string {
-    return this._consumerKey;
-  }
-
-  set consumerKey(value: string) {
-    this._consumerKey = value;
-  }
-
-  get consumerSecret(): string {
-    return this._consumerSecret;
-  }
-
-  set consumerSecret(value: string) {
-    this._consumerSecret = value;
-  }
-
-  get token(): string {
-    return this._token;
-  }
-
-  get secret(): string {
-    return this._secret;
-  }
-}
+export { OAuth1Credentials, OAuth1CredentialsSchema };

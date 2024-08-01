@@ -1,18 +1,7 @@
-import XenquBase from "../XenquBase";
+import XenquAPI from "..";
 import Contact from "../Models/Contact";
 
 export default class ContactRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * SearchRoutes Contacts
@@ -23,7 +12,7 @@ export default class ContactRoutes {
    * @param term Search Term
    */
   public searchContacts(term: string): Promise<any> {
-    return this.base.makeGet('/contact', {term: term});
+    return XenquAPI.Base.makeGet('/contact', {term: term});
   }
 
   /**
@@ -33,7 +22,7 @@ export default class ContactRoutes {
    * @param contactId: Contact ID to get
    */
   public getContactDetail(contactId: string): Promise<any> {
-    return this.base.makeGet('/contact/' + contactId);
+    return XenquAPI.Base.makeGet('/contact/' + contactId);
   }
 
   /**
@@ -43,7 +32,7 @@ export default class ContactRoutes {
    * @param contact Contact data to add
    */
   public addContact(contact: Contact): Promise<any> {
-    return this.base.makePost('/contact', JSON.stringify(contact.toJson()));
+    return XenquAPI.Base.makePost('/contact', JSON.stringify(contact.toJson()));
   }
 
   /**
@@ -54,7 +43,7 @@ export default class ContactRoutes {
    * @param contact Contact data to edit
    */
   public editContact(contactId: string, contact: Contact): Promise<any> {
-    return this.base.makePut('/contact/' + contactId, JSON.stringify(contact.toJson()));
+    return XenquAPI.Base.makePut('/contact/' + contactId, JSON.stringify(contact.toJson()));
   }
 
   /**
@@ -64,7 +53,7 @@ export default class ContactRoutes {
    * @param contactId Contact ID to delete
    */
   public deleteContact(contactId: string): Promise<any> {
-    return this.base.makeDelete('/contact/' + contactId);
+    return XenquAPI.Base.makeDelete('/contact/' + contactId);
   }
 
 }

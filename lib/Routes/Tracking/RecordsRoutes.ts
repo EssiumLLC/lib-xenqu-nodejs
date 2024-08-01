@@ -1,17 +1,6 @@
-import XenquBase from "../../XenquBase";
+import XenquAPI from "../..";
 
 export default class RecordsRoutes {
-
-  /* Global Variables */
-  private base: XenquBase;
-
-  constructor() {
-    this.base = new XenquBase('');
-  }
-
-  update(base: XenquBase) {
-    this.base = base;
-  }
 
   /**
    * Get a record and its content on a specific tab
@@ -20,7 +9,7 @@ export default class RecordsRoutes {
    * @param contactId Contact ID to get
    */
   getRecord(groupId: string, contactId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/actors/${contactId}`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/actors/${contactId}`)
   }
 
   /**
@@ -31,7 +20,7 @@ export default class RecordsRoutes {
    * @param contactId Contact ID to run rules on
    */
   applyRules(groupId: string, contactId: string) {
-    return this.base.makeGet(`/tracking/groups/${groupId}/actors/${contactId}/apply_rules`)
+    return XenquAPI.Base.makeGet(`/tracking/groups/${groupId}/actors/${contactId}/apply_rules`)
   }
 
 }
