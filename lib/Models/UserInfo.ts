@@ -108,6 +108,7 @@ const AccountSchema = z.object({
     configure_dashboard: z.boolean(),
     is_admin: z.boolean(),
     is_developer: z.boolean(),
+    is_billing_admin: z.boolean(),
   }),
   create_id: z.number(),
   create_date: z.string().datetime(),
