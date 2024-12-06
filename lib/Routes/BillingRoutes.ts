@@ -36,4 +36,8 @@ export default class BillingRoutes {
     public AcceptTerms(terms: object): Promise<any> {
         return XenquAPI.Base.makePost(`/billing/terms/accept`,JSON.stringify(terms));
     }
+
+    public GenerateCSV(billing_period: string): Promise<any> {
+        return XenquAPI.Base.makeGet(`/billing/generate_csv`,{billing_period: billing_period});
+    }
 }
