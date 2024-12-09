@@ -29,9 +29,23 @@ const BillingOverviewScehma = z.array(
   })
 );
 
+const BillingAlertSchema = z.array(
+  z.object({
+    active: z.boolean(),
+    billing_contact_id: z.number(),
+    id: z.string(),
+    last_triggered: z.date().nullable(),
+    master_contact_id: z.number(),
+    meter: z.string(),
+    threshold: z.number(),
+    triggered: z.boolean(),
+  })
+);
+
 type BillingSetupSecret = z.infer<typeof BillingSetupSecretSchema>;
 type BillingCustomer = z.infer<typeof BillingCustomerSchema>;
 type BillingActivity = z.infer<typeof BillingActivityScehma>;
 type BillingOverview = z.infer<typeof BillingOverviewScehma>;
+type BillingAlert = z.infer<typeof BillingAlertSchema>;
 
-export { BillingSetupSecret, BillingSetupSecretSchema, BillingCustomer, BillingCustomerSchema, BillingActivity, BillingActivityScehma, BillingOverview, BillingOverviewScehma };
+export { BillingSetupSecret, BillingSetupSecretSchema, BillingCustomer, BillingCustomerSchema, BillingActivity, BillingActivityScehma, BillingOverview, BillingOverviewScehma, BillingAlert, BillingAlertSchema };

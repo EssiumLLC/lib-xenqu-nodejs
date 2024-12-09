@@ -1,5 +1,5 @@
 import XenquAPI from "..";
-import { BillingActivity, BillingCustomer, BillingSetupSecret } from "../Models/Billing";
+import { BillingActivity, BillingAlert, BillingCustomer, BillingSetupSecret } from "../Models/Billing";
 
 export default class BillingRoutes {
 
@@ -39,5 +39,13 @@ export default class BillingRoutes {
 
     public GenerateCSV(billing_period: string): Promise<any> {
         return XenquAPI.Base.makeGet(`/billing/generate_csv`,{billing_period: billing_period});
+    }
+    
+    public GetAlerts(): Promise<BillingAlert> {
+        return XenquAPI.Base.makeGet(`/billing/alert`);
+    }
+
+    public SetAlert(meter: string, active: boolean, threshold: number): Promise<any> {
+        return XenquAPI.Base.makePost(`/billing/alert`,null, {meter: meter, active: active, threshold: threshold});
     }
 }
