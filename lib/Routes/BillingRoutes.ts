@@ -40,6 +40,10 @@ export default class BillingRoutes {
     public GenerateCSV(billing_period: string): Promise<any> {
         return XenquAPI.Base.makeGet(`/billing/generate_csv`,{billing_period: billing_period});
     }
+
+    public GetInvoices(billing_period: string): Promise<any> {
+        return XenquAPI.Base.makeGet(`/billing/invoices`,{billing_period: billing_period});
+    }
     
     public GetAlerts(): Promise<BillingAlert> {
         return XenquAPI.Base.makeGet(`/billing/alert`);
