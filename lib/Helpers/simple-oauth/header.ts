@@ -155,9 +155,9 @@ _.extend(Header.prototype, {
   build: function (output = 'header') {
     let s;
 
-    if (output == 'header')
+    if (output === 'header')
       s = 'OAuth ' + this.normalized_header_attributes();
-    else if (output == 'query')
+    else if (output === 'query')
       s = this.normalized_query_attributes();
 
     return s;
@@ -315,6 +315,7 @@ _.extend(Header.prototype, {
     const params = [];
 
     _.each(URI.parseQuery(this.uri.query || ''), function (vs, k) {
+      // @ts-expect-error because this is legacy code and legacy code sucks.  maybe we'll figure it out one day
       params.push(_(_.flatten([vs]).sort()).chain().map(function (v) { return [k, v]; }).value());
     });
 

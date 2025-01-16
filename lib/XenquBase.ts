@@ -1,10 +1,10 @@
-import OAuth2Token from "./Models/OAuth2Token";
 import fetch from 'cross-fetch';
-import WebTokenAuth from "./Models/WebTokenAuth";
-import { OAuth1Credentials } from "./Models";
 import XenquApiError from "./Helpers/XenquApiError";
 import { signJwt } from "./Helpers/jwt";
 import * as SimpleOAuth from "./Helpers/simple-oauth";
+import { OAuth1Credentials } from "./Models";
+import OAuth2Token from "./Models/OAuth2Token";
+import WebTokenAuth from "./Models/WebTokenAuth";
 
 /*
 Base for making HTTP requests
@@ -19,7 +19,8 @@ export default class XenquBase {
   private oauth: OAuth2Token;
   private webOauth: WebTokenAuth;
   private useWebAuth: boolean;
-  private errorCallbacks: { [key: string]: (data?: XenquApiError) => void };
+  // TODO: switch to event emitter...
+  private errorCallbacks: { [key: string]: ((data?: XenquApiError) => void) | undefined };
   private oauth2RetryVars: { clientId: string, clientSecret: string, subscriber: string, privateKey: string };
 
   constructor(baseUrl: string, clientId?: string, clientSecret?: string, useWebAuth: boolean = false) {
@@ -70,14 +71,14 @@ export default class XenquBase {
    * @param payload Stringified JSON data to send
    * @param parameters Parameters that may get encoded into oath token
    */
-  makePost(path: string, payload: string, parameters?: {}): Promise<any> {
+  makePost(path: string, payload?: string, parameters?: {}): Promise<any> {
     return this.makePostRecursive(path, payload, parameters, 0);
   }
 
   /**
    * Post Request recursive
    */
-  private makePostRecursive(path: string, payload: string, parameters?: {}, retries: number = 0): Promise<any> {
+  private makePostRecursive(path: string, payload?: string, parameters?: {}, retries: number = 0): Promise<any> {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "POST",
@@ -110,14 +111,14 @@ export default class XenquBase {
    * @param payload Stringified JSON data to send
    * @param parameters Parameters that may get encoded into oath token
    */
-  makePut(path: string, payload: string, parameters?: {}): Promise<any> {
+  makePut(path: string, payload?: string, parameters?: {}): Promise<any> {
     return this.makePutRecursive(path, payload, parameters, 0);
   }
 
   /**
    * PUT request recursive
    */
-  private makePutRecursive(path: string, payload: string, parameters?: {}, retries: number = 0): Promise<any> {
+  private makePutRecursive(path: string, payload?: string, parameters?: {}, retries: number = 0): Promise<any> {
     const params = parameters ? '?' + new URLSearchParams(parameters).toString() : '';
     return fetch(this.baseUrl + path + params, {
       method: "PUT",
@@ -469,7 +470,10 @@ export default class XenquBase {
   private executeAllErrorHandlers(error: XenquApiError) {
     Object.keys(this.errorCallbacks).forEach((key: string) => {
       try {
-        this.errorCallbacks[key](error);
+        if (this.errorCallbacks[key] && typeof this.errorCallbacks[key] === "function") {
+          // @ts-expect-error this isn't an error but the compiler seems to think it is. and now intelisense thinks this is an error -_-
+          this.errorCallbacks[key](error);
+        }
       } catch (e) {
         console.error("Error Handler Failed: ", e);
       }

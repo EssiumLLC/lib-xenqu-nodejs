@@ -1,17 +1,17 @@
-import { z } from "zod";
+import { object as zobject, string as zstring, array as zarray, boolean as zboolean, infer as zinfer } from "zod";
 
-const PolicySchema = z.object({
-    site_profile: z.string(),
-    security_actions: z.array(
-        z.object({
-            type: z.string(),
-            message: z.string(),
-            block: z.boolean(),
-            data: z.object({})
+const PolicySchema = zobject({
+    site_profile: zstring(),
+    security_actions: zarray(
+        zobject({
+            type: zstring(),
+            message: zstring(),
+            block: zboolean(),
+            data: zobject({})
         })
     )
 });
 
-type Policy = z.infer<typeof PolicySchema>;
+type Policy = zinfer<typeof PolicySchema>;
 
 export { Policy, PolicySchema };

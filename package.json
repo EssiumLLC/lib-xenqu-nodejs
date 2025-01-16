@@ -1,6 +1,6 @@
 {
   "name": "@essium-llc/lib-xenqu-nodejs",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A NodeJS Implementation of the Xenqu API",
   "main": "dist/index.js",
   "scripts": {
@@ -46,7 +46,12 @@
     "@types/jsonwebtoken": "^8.5.0",
     "@types/node": "^20.14.11",
     "dotenv": "^16.0.3",
-    "es6-promise": "^4.2.8"
+    "es6-promise": "^4.2.8",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "prettier": "^3.4.2",
+    "prettier-eslint": "^16.3.0"
   },
   "directories": {
     "lib": "lib"

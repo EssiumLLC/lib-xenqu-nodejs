@@ -1,70 +1,70 @@
-import { z } from "zod";
+import { object as zobject, string as zstring, array as zarray, boolean as zboolean, infer as zinfer } from "zod";
 
-const BootProfileSchema = z.object({
-    _id: z.string(),
-    profile_name: z.string(),
-    app_labels: z.object({
-        brand_name_short: z.string(),
-        brand_name_long: z.string(),
+const BootProfileSchema = zobject({
+    _id: zstring(),
+    profile_name: zstring(),
+    app_labels: zobject({
+        brand_name_short: zstring(),
+        brand_name_long: zstring(),
     }),
-    web_site: z.string().url(),
-    api_urls: z.array(z.string().url()),
-    openid_providers: z.array(z.object({
-        id: z.string(),
-        label: z.string(),
-        button_img: z.string().url(),
-        authority: z.string().url(),
-        client_id: z.string(),
-        response_type: z.string(),
-        scope: z.string(),
-        redirect_uri: z.string().url().nullable(),
-        replacement_data: z.object({}).optional(),
-        replacement_map: z.object({}).optional(),
-        allows_custom_tenant: z.boolean().nullable(),
-        request_replacement_data: z.object({}).nullable(),
-        client_lookup: z.string().nullable(),
-        metadata: z.object({
-            issuer: z.string().url(),
-            authorization_endpoint: z.string().url(),
-            userinfo_endpoint: z.string().url(),
-            end_session_endpoint: z.string().url(),
-            jwks_uri: z.string().url(),
+    web_site: zstring().url(),
+    api_urls: zarray(zstring().url()),
+    openid_providers: zarray(zobject({
+        id: zstring(),
+        label: zstring(),
+        button_img: zstring().url(),
+        authority: zstring().url(),
+        client_id: zstring(),
+        response_type: zstring(),
+        scope: zstring(),
+        redirect_uri: zstring().url().nullable(),
+        replacement_data: zobject({}).optional(),
+        replacement_map: zobject({}).optional(),
+        allows_custom_tenant: zboolean().nullable(),
+        request_replacement_data: zobject({}).nullable(),
+        client_lookup: zstring().nullable(),
+        metadata: zobject({
+            issuer: zstring().url(),
+            authorization_endpoint: zstring().url(),
+            userinfo_endpoint: zstring().url(),
+            end_session_endpoint: zstring().url(),
+            jwks_uri: zstring().url(),
         }),
     })),
 });
 
-const BootProviderSchema = z.object({
-    id: z.string(),
-    label: z.string(),
-    button_img: z.string().url(),
-    authority: z.string().url(),
-    client_id: z.string(),
-    response_type: z.string(),
-    scope: z.string(),
-    redirect_uri: z.string().url().nullable(),
-    replacement_data: z.object({}).optional(),
-    replacement_map: z.object({}).optional(),
-    allows_custom_tenant: z.boolean().nullable(),
-    request_replacement_data: z.object({}).nullable(),
-    client_lookup: z.string().nullable(),
-    metadata: z.object({
-        issuer: z.string().url(),
-        authorization_endpoint: z.string().url(),
-        userinfo_endpoint: z.string().url(),
-        end_session_endpoint: z.string().url(),
-        jwks_uri: z.string().url(),
+const BootProviderSchema = zobject({
+    id: zstring(),
+    label: zstring(),
+    button_img: zstring().url(),
+    authority: zstring().url(),
+    client_id: zstring(),
+    response_type: zstring(),
+    scope: zstring(),
+    redirect_uri: zstring().url().nullable(),
+    replacement_data: zobject({}).optional(),
+    replacement_map: zobject({}).optional(),
+    allows_custom_tenant: zboolean().nullable(),
+    request_replacement_data: zobject({}).nullable(),
+    client_lookup: zstring().nullable(),
+    metadata: zobject({
+        issuer: zstring().url(),
+        authorization_endpoint: zstring().url(),
+        userinfo_endpoint: zstring().url(),
+        end_session_endpoint: zstring().url(),
+        jwks_uri: zstring().url(),
     }),
 });
 
-const BootSchema = z.object({
-    _m: z.string(),
-    _s: z.string(),
+const BootSchema = zobject({
+    _m: zstring(),
+    _s: zstring(),
     _p: BootProfileSchema,
-    _o: z.array(BootProviderSchema),
+    _o: zarray(BootProviderSchema),
 });
 
-type BootProfile = z.infer<typeof BootProfileSchema>;
-type BootProvider = z.infer<typeof BootProviderSchema>;
-type Boot = z.infer<typeof BootSchema>;
+type BootProfile = zinfer<typeof BootProfileSchema>;
+type BootProvider = zinfer<typeof BootProviderSchema>;
+type Boot = zinfer<typeof BootSchema>;
 
 export { Boot, BootProfile, BootProvider, BootSchema, BootProfileSchema, BootProviderSchema };

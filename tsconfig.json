@@ -1,17 +1,14 @@
 {
-  "compilerOptions": {
-    "target": "es2017",
-    "module": "ESNext",
-    "declaration": true,
-    "allowJs": true,
-    "outDir": "./dist",
-    "strict": false,
-    "rootDir": "lib",
-    "moduleResolution":"node",
-  },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test/**/*"
-  ]
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "ESNext",
+        "declaration": true,
+        "allowJs": true,
+        "outDir": "./dist",
+        "strict": false,
+        "rootDir": "lib",
+        "moduleResolution": "node",
+        "strictNullChecks": true,
+    },
+    "exclude": ["node_modules/**/*", "dist/**/*", "test/**/*"]
 }

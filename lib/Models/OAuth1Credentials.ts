@@ -1,12 +1,12 @@
-import { z } from "zod";
+import { string as zstring, object as zobject, infer as zinfer } from "zod";
 
-const OAuth1CredentialsSchema = z.object({
-  consumer_key: z.string(),
-  consumer_secret: z.string(),
-  token: z.string(),
-  token_secret: z.string(),
+const OAuth1CredentialsSchema = zobject({
+  consumer_key: zstring(),
+  consumer_secret: zstring(),
+  token: zstring(),
+  token_secret: zstring(),
 });
 
-type OAuth1Credentials = z.infer<typeof OAuth1CredentialsSchema>;
+type OAuth1Credentials = zinfer<typeof OAuth1CredentialsSchema>;
 
 export { OAuth1Credentials, OAuth1CredentialsSchema };

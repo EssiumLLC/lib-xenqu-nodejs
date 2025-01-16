@@ -6,41 +6,44 @@
 */
 
 import * as Parser from './parser';
-import _ from 'underscore';
 
-const _uri = function (parsed) {
+class _uri {
+  private scheme?: string;
+  private userinfo?: string;
+  private host?: string;
+  private port?: number;
+  private path?: string;
+  public query?: string | null;
+  public fragment?: string;
+  private opaque?: boolean;
+  
+  private readonly defaultPortMap: { [scheme: string]: number } = {
+    http: 80,
+    https: 443,
+  };
 
-  _.extend(this, parsed);
-
-  this.default_port = '';
-  switch (this.scheme) {
-
-    case 'http':
-      this.default_port = '80';
-      break;
-    case 'https':
-      this.default_port = '443';
-      break;
-
+  constructor(parsed?: Partial<_uri>) {
+    if (parsed) {
+      Object.assign(this, parsed);
+    }
+    this.normalize();
   }
-}
 
-_.extend(_uri.prototype, {
-
-  normalize: function () {
-
-    if (this.path && this.path == '')
+  public normalize(): void {
+    if (this.path && this.path === '') {
       this.path = '/';
+    }
 
-    if (this.scheme && this.scheme != this.scheme.toLowerCase())
+    if (this.scheme && this.scheme !== this.scheme.toLowerCase()) {
       this.scheme = this.scheme.toLowerCase();
+    }
 
-    if (this.host && this.host != this.host.toLowerCase())
+    if (this.host && this.host !== this.host.toLowerCase()) {
       this.host = this.host.toLowerCase();
+    }
+  }
 
-  },
-
-  build: function () {
+  public build(): string {
     let str = '';
 
     if (this.scheme) {
@@ -51,9 +54,9 @@ _.extend(_uri.prototype, {
     if (this.opaque) {
       str += this.opaque;
     } else {
-
-      if (this.host)
+      if (this.host) {
         str += '//';
+      }
 
       if (this.userinfo) {
         str += this.userinfo;
@@ -64,12 +67,14 @@ _.extend(_uri.prototype, {
         str += this.host;
       }
 
-      if (this.port && this.port != this.default_port) {
+      if (this.port && this.port !== this.getDefaultPort(this.scheme)) {
         str += ':';
         str += this.port;
       }
 
-      str += this.path;
+      if (this.path) {
+        str += this.path;
+      }
 
       if (this.query) {
         str += '?';
@@ -84,7 +89,11 @@ _.extend(_uri.prototype, {
 
     return str;
   }
-});
+
+  private getDefaultPort(scheme?: string): number {
+    return scheme ? this.defaultPortMap[scheme] || 0 : 0;
+  }
+}
 
 
 /*!
@@ -128,7 +137,7 @@ const URI = {
         if (!(result[keyToken[0]] instanceof Array)) {
           result[keyToken[0]] = [result[keyToken[0]], value];
         } else {
-          if (_.isArray(result[keyToken[0]]))
+          if (Array.isArray(result[keyToken[0]]))
             result[keyToken[0]].push(value);
           else
             result[keyToken[0]] = [result[keyToken[0]], value];
@@ -144,7 +153,7 @@ const URI = {
   },
 
   queryString: function (params) {
-    return _.map(params, function (v, k) {
+    return params.map((v, k) => {
       return k + '=' + encodeURIComponent(v);
     }).join('&');
   },

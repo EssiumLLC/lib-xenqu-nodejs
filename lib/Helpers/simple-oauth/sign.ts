@@ -34,7 +34,7 @@ function sha1_kt(t) {
  * Calculate the HMAC-SHA1 of a key and some data
  */
 function core_hmac_sha1(key, data) {
-  let bkey = str2binb(key);
+  let bkey: number[] = str2binb(key);
   if (bkey.length > 16) bkey = core_sha1(bkey, key.length * chrsz);
 
   const ipad = Array(16), opad = Array(16);
@@ -69,7 +69,7 @@ function rol(num, cnt) {
  * In 8-bit function, characters >255 have their hi-byte silently ignored.
  */
 function str2binb(str) {
-  const bin = [];
+  const bin: number[] = [];
   const mask = (1 << chrsz) - 1;
   for (let i = 0; i < str.length * chrsz; i += chrsz)
     bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (32 - chrsz - i % 32);

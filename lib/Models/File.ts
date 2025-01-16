@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { object as zobject, string as zstring, infer as zinfer } from "zod";
 
-const FileDataSchema = z.object({
-    data: z.string().url(),
+const FileDataSchema = zobject({
+    data: zstring().url(),
 });
 
-type FileData = z.infer<typeof FileDataSchema>;
+type FileData = zinfer<typeof FileDataSchema>;
 
 export {
     FileDataSchema,
