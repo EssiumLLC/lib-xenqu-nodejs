@@ -91,6 +91,7 @@ const PaymentMethodSchema = zobject({
 
 const PaymentMethodsSchema = zobject({
   data: zarray(PaymentMethodSchema),
+  error: zstring().optional(),
   has_more: zboolean(),
   object: zstring(),
 });
