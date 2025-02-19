@@ -1,6 +1,6 @@
 {
   "name": "@essium-llc/lib-xenqu-nodejs",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A NodeJS Implementation of the Xenqu API",
   "main": "dist/index.js",
   "scripts": {

@@ -10,6 +10,7 @@ import { OAuth1Credentials, Boot } from "./Models";
 import XenquApiError from "./Helpers/XenquApiError";
 import { AdditionalLoginParameters } from "./Interfaces";
 import BillingRoutes from "./Routes/BillingRoutes";
+import HelpCenterRoutes from "./Routes/HelpCenterRoutes";
 
 export default class XenquAPI {
 
@@ -31,6 +32,7 @@ export default class XenquAPI {
   private _files: FilesRoutes = new FilesRoutes();
   private _search: SearchRoutes = new SearchRoutes();
   private _billing: BillingRoutes = new BillingRoutes();
+  private _helpCenter: HelpCenterRoutes = new HelpCenterRoutes();
 
   /* Static instance of XenquBase */
   static Base: XenquBase;
@@ -287,5 +289,11 @@ export default class XenquAPI {
    */
   get billing() {
     return this._billing;
+  }
+  /**
+   * Get Help Center Routes
+   */
+  get helpCenter() {
+    return this._helpCenter;
   }
 }
