@@ -3,6 +3,7 @@ import { z } from 'zod';
 const RecursivePageIndexSchema = z.object({
     label: z.string(),
     id: z.string(),
+    position: z.number(),
     type: z.union([z.literal('article'), z.literal('folder')]),
     children: z.array(z.lazy(() => RecursivePageIndexSchema))
 })
