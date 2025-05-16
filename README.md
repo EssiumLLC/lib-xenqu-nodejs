@@ -4,7 +4,7 @@
 ### NodeJS Implementation of the Xenqu API (with types) Based off of [these API Docs](https://apidocs.xenqu.com/)    
 ### Getting Started: Install:    
 ```shell
-npm install @essium-llc/lib-xenqu-nodejs 
+npm install @essiumlabs/lib-xenqu-nodejs 
 ```   
 ### Usage
   
@@ -26,7 +26,7 @@ await API.init(); // Connects to API using OAuth 2.0 to get OAuth 1.0 credential
 import XenquAPI from "lib-xenqu-nodejs";
 
 const boot = await XenquAPI.boot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
-const API = new XenquAPI(boot._m, boot._s, null, null, 'https://stage.xenqu.com/api', true);  
+const API = new XenquAPI(boot._m, boot._s, null, null, 'https://xenqu.com/api', true);  
 const tempToken = await API.startWebAuth('your-callback-url');  
 // Use the tempToken to embed `https://xenqu.com/login.html?oauth_token=${tempToken}`  
 // login.html will load username and password field. Once UN/PW are accepted  
@@ -41,7 +41,7 @@ const tokensToSave = await API.finishWebAuth(oauth_verifier); // Save these toke
 import XenquAPI from "lib-xenqu-nodejs";
 
 const boot = await XenquAPI.boot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
-const API = new XenquAPI(boot._m, boot._s, null, null, 'https://stage.xenqu.com/api', true); 
+const API = new XenquAPI(boot._m, boot._s, null, null, 'https://xenqu.com/api', true); 
  
 // Typically, the client ID and client secret are different for the middle requests in
 // our oauth process. These will be provided if this is the case. Otherwise, 
@@ -61,7 +61,7 @@ const authenticator = 'default'; // 'openid'
 // that that SSO provider requires to be sent.
 const extraParams = { user_name: 'username', user_pass: 'password' };
 // These are example parameters for Microsoft SSO
-const extraParams = { provider: 'microsoft', id_token: 'microsoft-id-token' }
+const extraParams = { provider: 'microsoft', id_token: 'microsoft-id-token' };
 // Attempt the full xenqu oauth authentication flow in one fell swoop
 const tokensToSave await API.attemptAuthWithUNandPWorSSO(loginClient, loginSecret, callback, authenticator, extraParams); // Save these tokens (securely) if you'd like to attempt reauthoriztion later!  
 ``` 
@@ -70,7 +70,7 @@ If you are having issues trying to use the whole auth flow at once, you can debu
 import XenquAPI from "lib-xenqu-nodejs";
 
 const boot = await XenquAPI.boot('https://xenqu.com/api', 'your-app-id', 'your-site-profile')  
-const API = new XenquAPI(boot._m, boot._s, null, null, 'https://stage.xenqu.com/api', true); 
+const API = new XenquAPI(boot._m, boot._s, null, null, 'https://xenqu.com/api', true); 
 
 // See above example for explination of these variables and what they all mean
 const loginClient = 'your-login-client-id'; // boot._m
@@ -111,13 +111,15 @@ Once initialized, you can call any API route available on [these API Docs.](http
   
 Access API Routes:    
 ```typescript 
-API.account  // Account Routes 
-API.contact  // Contact Routes 
-API.tracking // Tracking Routes 
-API.forms    // Form Routes
-API.reports  // Report Routes 
-API.files    // File Routes
-API.search   // Search Routes  
+API.account    // Account Routes 
+API.contact    // Contact Routes 
+API.tracking   // Tracking Routes 
+API.forms      // Form Routes
+API.reports    // Report Routes 
+API.files      // File Routes
+API.search     // Search Routes
+API.billing    // Billing Routes
+API.helpCenter // Help Center API Routes
 ```    
  ## Other Implementations    
  ### Ruby  

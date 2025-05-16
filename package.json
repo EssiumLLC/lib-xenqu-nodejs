@@ -1,6 +1,6 @@
 {
-  "name": "@essium-llc/lib-xenqu-nodejs",
-  "version": "2.0.2",
+  "name": "@essiumlabs/lib-xenqu-nodejs",
+  "version": "2.0.3",
   "description": "A NodeJS Implementation of the Xenqu API",
   "main": "dist/index.js",
   "scripts": {
@@ -16,16 +16,9 @@
   },
   "keywords": [
     "essium",
+    "essiumlabs",
     "xenqu",
-    "pryde",
-    "api",
-    "node",
-    "javascript",
-    "typescript",
-    "onboarding",
-    "oauth",
-    "oauth1.0",
-    "oauth2.0"
+    "pryde"
   ],
   "author": "Soren Zaiser",
   "license": "GPL-3.0",
@@ -34,10 +27,8 @@
   },
   "homepage": "https://github.com/EssiumLLC/lib-xenqu-nodejs#readme",
   "dependencies": {
-    "@mui/x-data-grid": "^7.22.2",
     "cross-fetch": "^3.1.4",
     "json-web-token": "^3.2.0",
-    "recharts": "^2.13.3",
     "typescript": "^4.8.4",
     "underscore": "^1.13.1",
     "zod": "^3.23.8"
