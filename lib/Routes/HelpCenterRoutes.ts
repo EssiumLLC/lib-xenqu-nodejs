@@ -89,10 +89,25 @@ export default class HelpCenterRoutes {
     subject: string,
     body: string,
     attachments?: { data: string; filename: string; content_type: string }[],
-  ): Promise<{ ok: boolean }> {
+  ): Promise<{ submitted: boolean; id: string }> {
     return XenquAPI.Base.makePost(
       "/help_center/submit_ticket",
       JSON.stringify({ subject, body, attachments }),
+    );
+  }
+
+  /**
+   * Prepare a ticket
+   * @param subject Ticket subject
+   * @param body Ticket body
+   */
+  public prepare_ticket(
+    subject: string,
+    body: string,
+  ): Promise<{ articles: { id: string; title: string }[] }> {
+    return XenquAPI.Base.makePost(
+      "/help_center/prepare_ticket",
+      JSON.stringify({ subject, body }),
     );
   }
 }
