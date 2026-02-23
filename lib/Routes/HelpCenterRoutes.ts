@@ -3,6 +3,7 @@ import {
   HelpCenterAction,
   HelpCenterLlmResponse,
   HelpCenterPage,
+  HelpCenterRankedArticle,
   HelpCenterSearchResults,
   HelpCenterSpaces,
 } from "../Models/HelpCenter";
@@ -104,7 +105,7 @@ export default class HelpCenterRoutes {
   public prepare_ticket(
     subject: string,
     body: string,
-  ): Promise<{ articles: { id: string; title: string }[] }> {
+  ): Promise<{ articles: HelpCenterRankedArticle[] }> {
     return XenquAPI.Base.makePost(
       "/help_center/prepare_ticket",
       JSON.stringify({ subject, body }),

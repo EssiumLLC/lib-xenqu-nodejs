@@ -50,6 +50,15 @@ const HelpCenterPage = z.object({
     }),
 });
 
+const HelpCenterRankedArticle = z.object({
+    id: z.string(),
+    title: z.string(),
+    most_relevant_text: z.string(),
+    rank: z.number(),
+    summary: z.string(),
+    tags: z.array(z.string()),
+});
+
 
 export enum HelpCenterAction {
     OpenSession = 'open_session',
@@ -73,3 +82,4 @@ export type HelpCenterSearchResults = z.infer<typeof HelpCenterSearchResultsShem
 export type HelpCenterSearchArticle = z.infer<typeof HelpCenterSearchArticleSchema>;
 export type HelpCenterLlmResponse = z.infer<typeof HelpCenterLlmResultSchema>;
 export type HelpCenterPage = z.infer<typeof HelpCenterPage>;
+export type HelpCenterRankedArticle = z.infer<typeof HelpCenterRankedArticle>;
