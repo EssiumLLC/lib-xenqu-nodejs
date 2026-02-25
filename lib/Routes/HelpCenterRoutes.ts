@@ -90,7 +90,7 @@ export default class HelpCenterRoutes {
     subject: string,
     body: string,
     attachments?: { data: string; filename: string; content_type: string }[],
-  ): Promise<{ submitted: boolean; id: string }> {
+  ): Promise<{ submitted: boolean; id: string, from: string }> {
     return XenquAPI.Base.makePost(
       "/help_center/submit_ticket",
       JSON.stringify({ subject, body, attachments }),
