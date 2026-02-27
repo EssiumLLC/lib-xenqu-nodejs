@@ -2,15 +2,25 @@ import XenquAPI from "..";
 import { FileData } from "../Models/File";
 import { FileUploadResponseType } from "../Models/Files";
 
+type FileChunk = {
+  chunkData: string;
+  chunkSeq: number;
+  chunkStart: number;
+  chunkEnd: number;
+  chunkSize: number;
+  chunkLimit: number;
+  totalSize: number;
+  totalChunks: number;
+  fileHandle?: string;
+};
 export default class FilesRoutes {
-
   /**
    * Download File
    * @see [API Docs]{@link https://apidocs.xenqu.com/#2102ba3f-8a86-4f02-aeb2-3cdfbda3eadc}
    * @param fileId File ID to download
    */
   public downloadFile(fileId: string): Promise<FileData> {
-    return XenquAPI.Base.makeGet('/files/' + fileId, {out: 'json'});
+    return XenquAPI.Base.makeGet("/files/" + fileId, { out: "json" });
   }
 
   /**
@@ -23,26 +33,46 @@ export default class FilesRoutes {
    * @param isImage if the file is an image, set to true. Default false
    * @param chunkLimit Max Chunk size to use, in bytes. Default is 1000000, or 1 mb
    */
-  public uploadFile(fileData: string, isImage: boolean = false, chunkLimit: number = 1000000): Promise<FileUploadResponseType[]> {
-    // Chunk up file and generate POST requests
-    const promises: Promise<FileUploadResponseType>[] = [];
-    let chunkCounter = 0;
-    for (let start = 0; start < fileData.length; start += chunkLimit) {
-      const chunk = fileData.slice(start, start + chunkLimit + 1)
-      const data = {
-        "chunkData": chunk,
-        "chunkSeq": chunkCounter,
-        "chunkStart": start,
-        "chunkEnd": start + chunk.length,
-        "chunkSize": chunk.length,
-        "chunkLimit": chunkLimit,
-        "totalSize": fileData.length,
-        "totalChunks": Math.ceil(fileData.length / chunkLimit) // Calc max number of chunks that we'll need
-      }
-      promises.push(XenquAPI.Base.makePost("/files", JSON.stringify(data)))
-    }
-    // Execute all POST requests
-    return Promise.all(promises);
-  }
+  public uploadFile(
+    fileData: string,
+    isImage: boolean = false,
+    chunkLimit: number = 1000000,
+  ): Promise<FileUploadResponseType[]> {
+    const chunks: FileChunk[] = [];
 
+    // Turn a chunk into a request
+    const makeReq = (chunk: FileChunk): Promise<FileUploadResponseType> =>
+      XenquAPI.Base.makePost("/files", JSON.stringify(chunk));
+
+    // Calculate total chunks
+    let totalChunks = Math.ceil(fileData.length / chunkLimit);
+
+    // Convert to chunks
+    for (let start = 0; start < fileData.length; start += chunkLimit) {
+      const chunk = fileData.slice(start, start + chunkLimit + 1);
+      chunks.push({
+        chunkData: chunk,
+        chunkSeq: chunks.length,
+        chunkStart: start,
+        chunkEnd: start + chunk.length,
+        chunkSize: chunk.length,
+        chunkLimit: chunkLimit,
+        totalSize: fileData.length,
+        totalChunks,
+      });
+    }
+
+    // Upload the first chunk to get the file handle, then upload the rest of the chunks with that file handle in parallel for faster uploads
+    return makeReq(chunks[0]).then((res) => {
+      const handle = res.fileHandle;
+
+      // Attach file handle to the rest of the chunks and upload in sequence
+      return chunks.slice(1).reduce((promise, chunk) => {
+        return promise.then((prev) => {
+          chunk.fileHandle = handle;
+          return makeReq(chunk).then((res) => [...prev, res]);
+        });
+      }, Promise.resolve([]));
+    });
+  }
 }
