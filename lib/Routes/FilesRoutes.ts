@@ -1,5 +1,6 @@
 import XenquAPI from "..";
 import { FileData } from "../Models/File";
+import { FileUploadResponseType } from "../Models/Files";
 
 export default class FilesRoutes {
 
@@ -22,9 +23,9 @@ export default class FilesRoutes {
    * @param isImage if the file is an image, set to true. Default false
    * @param chunkLimit Max Chunk size to use, in bytes. Default is 1000000, or 1 mb
    */
-  public uploadFile(fileData: string, isImage: boolean = false, chunkLimit: number = 1000000): Promise<any> {
+  public uploadFile(fileData: string, isImage: boolean = false, chunkLimit: number = 1000000): Promise<FileUploadResponseType[]> {
     // Chunk up file and generate POST requests
-    const promises: Promise<any>[] = [];
+    const promises: Promise<FileUploadResponseType>[] = [];
     let chunkCounter = 0;
     for (let start = 0; start < fileData.length; start += chunkLimit) {
       const chunk = fileData.slice(start, start + chunkLimit + 1)
