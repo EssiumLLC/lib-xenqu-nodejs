@@ -72,7 +72,7 @@ export default class FilesRoutes {
           chunk.fileHandle = handle;
           return makeReq(chunk).then((res) => [...prev, res]);
         });
-      }, Promise.resolve([]));
+      }, Promise.resolve([res]));
     });
   }
 }
