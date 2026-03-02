@@ -84,12 +84,12 @@ export default class HelpCenterRoutes {
    * Submit a ticket
    * @param subject Ticket subject
    * @param body Ticket body
-   * @param attachments Optional attachments, data should be base64 encoded, content_type should be the file's MIME type
+   * @param attachments Optional attachments, upload file through the files endpoint, then attach handle here
    */
   public submit_ticket(
     subject: string,
     body: string,
-    attachments?: { data: string; filename: string; content_type: string }[],
+    attachments?: { fileHandle: string; fileName: string; }[],
   ): Promise<{ submitted: boolean; id: string, from: string }> {
     return XenquAPI.Base.makePost(
       "/help_center/submit_ticket",
