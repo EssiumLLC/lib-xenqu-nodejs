@@ -105,6 +105,118 @@ const AcceptTermsSchema = zobject({
   terms_agreed_to: zstring(),
 });
 
+const ProductSchema = zobject({
+  id: zstring(),
+  object: zstring(),
+  active: zboolean(),
+  created: znumber(),
+  default_price: zstring().nullable(),
+  description: zstring().nullable(),
+  images: zarray(zstring()),
+  marketing_features: zarray(zobject({
+    name: zstring().nullable(),
+  })),
+  livemode: zboolean(),
+  metadata: zobject({}),
+  name: zstring(),
+  package_dimensions: zobject({
+    height: znumber(),
+    length: znumber(),
+    weight: znumber(),
+    width: znumber(),
+  }).nullable(),
+  shippable: zboolean().nullable(),
+  statement_descriptor: zstring().nullable(),
+  tax_code: zstring().nullable(),
+  unit_label: zstring().nullable(),
+  updated: znumber(),
+  url: zstring().nullable(),
+});
+
+const ProductsSchema = zobject({
+  data: zarray(ProductSchema),
+  error: zstring().optional(),
+  has_more: zboolean(),
+  object: zstring(),
+});
+
+const PriceSchema = zobject({
+  id: zstring(),
+  object: zstring(),
+  active: zboolean(),
+  billing_scheme: zstring(),
+  created: znumber(),
+  currency: zstring(),
+  custom_unit_amount: zobject({
+    maximum: znumber().nullable(),
+    minimum: znumber().nullable(),
+    preset: znumber().nullable(),
+  }).nullable(),
+  livemode: zboolean(),
+  lookup_key: zstring().nullable(),
+  metadata: zobject({}),
+  nickname: zstring().nullable(),
+  product: zstring(),
+  recurring: zobject({
+    interval: zstring(),
+    interval_count: znumber(),
+    trial_period_days: zstring().nullable(),
+    usage_type: zstring(),
+  }).nullable(),
+  tax_behavior: zstring().nullable(),
+  tiers_mode: zstring().nullable(),
+  transform_quantity: zobject({
+    divide_by: znumber(),
+    round: zstring(),
+  }).nullable(),
+  type: zstring(),
+  unit_amount: znumber().nullable(),
+  unit_amount_decimal: zstring().nullable(),
+});
+
+const PricesSchema = zobject({
+  data: zarray(PriceSchema),
+  error: zstring().optional(),
+  has_more: zboolean(),
+  object: zstring(),
+});
+
+const CheckoutSessionSchema = zobject({
+  id: zstring(),
+  url: zstring().nullable(),
+});
+
+const BillingBalanceSchema = zobject({
+  balance: znumber(),
+  last_updated: zstring().nullable(),
+});
+
+const BillingLedgerSchema = zobject({
+  id: zstring(),
+  product_id: zstring(),
+  master_contact_id: znumber(),
+  xenqu_red_id: zstring().nullable(),
+  ext_ref_id: zstring(),
+  amount: znumber(),
+  memo: zstring().nullable(),
+  ledger_type: zstring(),
+  create_date: zstring().or(zdate()),
+});
+
+const BillingLedgerResponseSchema = zobject({
+  data: zarray(BillingLedgerSchema),
+});
+
+const BillingPermissionsResponseSchema = zobject({
+  credit_admin: zboolean(),
+});
+
+const BillingIdentifiersResponseSchema = zobject({
+  stripe_customer_id: zstring(),
+  jira_customer_id: zstring(),
+  front_account_id: zstring(),
+})
+
 type BillingCustomer = zinfer<typeof BillingCustomerSchema>;
 type BillingActivity = zinfer<typeof BillingActivityScehma>;
 type BillingOverview = zinfer<typeof BillingOverviewSchema>;
@@ -112,5 +224,14 @@ type BillingAlert = zinfer<typeof BillingAlertSchema>;
 type PaymentMethod = zinfer<typeof PaymentMethodSchema>;
 type PaymentMethods = zinfer<typeof PaymentMethodsSchema>;
 type AcceptTerms = zinfer<typeof AcceptTermsSchema>;
+type Product = zinfer<typeof ProductSchema>;
+type Products = zinfer<typeof ProductsSchema>;
+type Price = zinfer<typeof PriceSchema>;
+type Prices = zinfer<typeof PricesSchema>;
+type CheckoutSession = zinfer<typeof CheckoutSessionSchema>;
+type BillingBalance = zinfer<typeof BillingBalanceSchema>;
+type BillingLedgerResponse = zinfer<typeof BillingLedgerResponseSchema>;
+type BillingPermissionsResponse = zinfer<typeof BillingPermissionsResponseSchema>;
+type BillingIdentifiersResponse = zinfer<typeof BillingIdentifiersResponseSchema>;
 
-export { BillingActivity, BillingActivityScehma, BillingAlert, BillingAlertSchema, BillingCustomer, BillingCustomerSchema, BillingOverview, BillingOverviewSchema, PaymentMethod, PaymentMethodSchema, AcceptTerms, AcceptTermsSchema, PaymentMethods, PaymentMethodsSchema };
+export { BillingActivity, BillingActivityScehma, BillingAlert, BillingAlertSchema, BillingCustomer, BillingCustomerSchema, BillingOverview, BillingOverviewSchema, PaymentMethod, PaymentMethodSchema, AcceptTerms, AcceptTermsSchema, PaymentMethods, PaymentMethodsSchema, Product, ProductSchema, Products, ProductsSchema, Price, PriceSchema, Prices, PricesSchema, CheckoutSession, CheckoutSessionSchema, BillingBalance, BillingBalanceSchema, BillingLedgerResponse, BillingLedgerResponseSchema, BillingPermissionsResponse, BillingPermissionsResponseSchema, BillingIdentifiersResponse, BillingIdentifiersResponseSchema };
