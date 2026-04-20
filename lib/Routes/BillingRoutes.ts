@@ -1,5 +1,5 @@
 import XenquAPI from "..";
-import { AcceptTerms, BillingActivity, BillingAlert, BillingCustomer, BillingOverview, PaymentMethod, PaymentMethods } from "../Models/Billing";
+import { AcceptTerms, BillingActivity, BillingAlert, BillingCustomer, BillingOverview, PaymentMethod, PaymentMethods, Product, Products, Price, Prices, CheckoutSessionSchema, CheckoutSession, BillingBalanceSchema, BillingBalance, BillingLedgerResponse, BillingLedgerResponseSchema, BillingPermissionsResponse, BillingPermissionsResponseSchema, BillingIdentifiersResponse, BillingIdentifiersResponseSchema } from "../Models/Billing";
 
 export default class BillingRoutes {
 
@@ -51,5 +51,33 @@ export default class BillingRoutes {
 
     public SetAlert(meter: string, active: boolean, threshold: number): Promise<BillingAlert> {
         return XenquAPI.Base.makePost(`/billing/alert`, undefined, { meter: meter, active: active, threshold: threshold });
+    }
+
+    public GetProduct(): Promise<Products> {
+        return XenquAPI.Base.makeGet(`/billing/products`);
+    }
+
+    public GetPrices(product_id: string): Promise<Prices> {
+        return XenquAPI.Base.makeGet(`/billing/prices`, { product_id: product_id });
+    }
+
+    public CreateCheckoutSession(price_id: string, success_url: string, cancel_url: string): Promise<CheckoutSession> {
+        return XenquAPI.Base.makePost(`/billing/checkout_session`, JSON.stringify({ price_id: price_id, success_url: success_url, cancel_url: cancel_url }));
+    }
+
+    public GetBalance(): Promise<BillingBalance> {
+        return XenquAPI.Base.makeGet(`/billing/balance`);
+    }
+
+    public GetLedger(): Promise<BillingLedgerResponse> {
+        return XenquAPI.Base.makeGet(`/billing/ledger`);
+    }
+
+    public GetPermissions(): Promise<BillingPermissionsResponse> {
+        return XenquAPI.Base.makeGet(`/billing/permissions`);
+    }
+
+    public GetIdentifiers(): Promise<BillingIdentifiersResponse> {
+        return XenquAPI.Base.makeGet(`/billing/identifiers`);
     }
 }
