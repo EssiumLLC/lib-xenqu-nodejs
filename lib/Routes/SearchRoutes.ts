@@ -1,29 +1,53 @@
-import XenquAPI from ".."
+import XenquAPI from "..";
 
 export default class SearchRoutes {
-
-  /**
-   * Perform a quick search
-   * @param query Array of query parameters
-   * @param type Quick search type
-   * @param accountId Unknown
-   * @param inherited Unknown
-   * @param limit Objects to return
-   * @param offset Search object to start at
-   * @param tabId Current Tab ID
-   * @param total Unknown
-   */
-  quickSearch(query: {}[], type: "records" | "groups" | string, accountId: null | string = null, inherited: boolean = false, limit: number = 20, offset: number = 0, tabId?: string, total?: number) {
-    const payload = {
-      account_id: accountId,
-      inherited: inherited,
-      limit: limit,
-      offset: offset,
-      query: query,
-      tab_id: tabId,
-      type: type
+    /**
+     * Perform a quick search
+     * @param query Array of query parameters
+     * @param type Quick search type
+     * @param accountId Unknown
+     * @param inherited Unknown
+     * @param limit Objects to return
+     * @param offset Search object to start at
+     * @param tabId Current Tab ID
+     * @param total Unknown
+     */
+    /**
+     * POST /library/search/ — search library items by title (read-only).
+     */
+    searchLibraryItems(query: {
+        title?: string;
+        group_id?: string;
+        [key: string]: unknown;
+    }) {
+        return XenquAPI.Base.makePost(
+            "/library/search/",
+            JSON.stringify(query)
+        );
     }
-    return XenquAPI.Base.makePost(`/tracking/quick_search/${type}`, JSON.stringify(payload))
-  }
 
+    quickSearch(
+        query: {}[],
+        type: "records" | "items" | "groups" | "library_items" | string,
+        accountId: null | string = null,
+        inherited: boolean = false,
+        limit: number = 20,
+        offset: number = 0,
+        tabId?: string,
+        total?: number
+    ) {
+        const payload = {
+            account_id: accountId,
+            inherited: inherited,
+            limit: limit,
+            offset: offset,
+            query: query,
+            tab_id: tabId,
+            type: type,
+        };
+        return XenquAPI.Base.makePost(
+            `/tracking/quick_search/${type}`,
+            JSON.stringify(payload)
+        );
+    }
 }
